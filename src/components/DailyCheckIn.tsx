@@ -18,29 +18,43 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
   const [stress, setStress] = useState(5);
   const [bodyTemperature, setBodyTemperature] = useState<'normal' | 'hot-flash' | 'night-sweats' | 'cold'>('normal');
   const [notes, setNotes] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const { saveCheckIn } = useApp();
 
-  const handleSave = () => {
-    const today = new Date().toISOString().split('T')[0];
+  const handleSave = async () => {
+    setSaving(true);
     
-    saveCheckIn({
-      date: today,
-      mood,
-      energy,
-      libido,
-      sleep,
-      stress,
-      bodyTemperature,
-      notes: notes || undefined
-    });
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      await saveCheckIn({
+        date: today,
+        mood,
+        energy,
+        libido,
+        sleep,
+        stress,
+        bodyTemperature,
+        notes: notes || undefined
+      });
 
-    toast({
-      title: "Check-in saved! 💜",
-      description: "Your daily wellness data has been recorded.",
-    });
+      toast({
+        title: "Check-in saved! 💜",
+        description: "Your daily wellness data has been recorded.",
+      });
 
-    onComplete();
+      onComplete();
+    } catch (error) {
+      console.error('Error saving check-in:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save your check-in. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleBodyTemperatureChange = (value: string) => {
@@ -169,9 +183,10 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
 
             <Button 
               onClick={handleSave}
+              disabled={saving}
               className="w-full bg-gradient-to-r from-rose-400 to-purple-400 hover:from-rose-500 hover:to-purple-500"
             >
-              Save Check-In
+              {saving ? 'Saving...' : 'Save Check-In'}
             </Button>
           </CardContent>
         </Card>

@@ -8,35 +8,33 @@ import DailyCheckIn from '../components/DailyCheckIn';
 import ContentLibrary from '../components/ContentLibrary';
 import SelfWorthToolkit from '../components/SelfWorthToolkit';
 import WellnessInsights from '../components/WellnessInsights';
+import AuthPage from '../components/AuthPage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Sparkles } from 'lucide-react';
 
 const AppContent: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'welcome' | 'quiz' | 'persona' | 'dashboard' | 'checkin' | 'content' | 'toolkit' | 'insights'>('welcome');
-  const { user, setUser } = useApp();
+  const [currentView, setCurrentView] = useState<'welcome' | 'auth' | 'quiz' | 'persona' | 'dashboard' | 'checkin' | 'content' | 'toolkit' | 'insights'>('welcome');
+  const { user, session, loading } = useApp();
 
   useEffect(() => {
-    // Check if user exists and onboarding is complete
-    if (user?.onboardingCompleted) {
+    if (loading) return;
+
+    if (!session) {
+      setCurrentView('welcome');
+    } else if (user?.onboardingCompleted) {
       setCurrentView('dashboard');
-    } else if (user) {
+    } else {
       setCurrentView('quiz');
     }
-  }, [user]);
+  }, [user, session, loading]);
 
   const handleStartJourney = () => {
-    // Create a new user
-    const newUser = {
-      id: crypto.randomUUID(),
-      email: `user_${Date.now()}@example.com`, // In real app, this would be actual email
-      onboardingCompleted: false,
-      createdAt: new Date().toISOString()
-    };
-    
-    setUser(newUser);
-    localStorage.setItem('menopause-app-user', JSON.stringify(newUser));
-    setCurrentView('quiz');
+    setCurrentView('auth');
+  };
+
+  const handleAuthSuccess = () => {
+    // The useEffect will handle routing based on user state
   };
 
   const handleQuizComplete = () => {
@@ -66,6 +64,19 @@ const AppContent: React.FC = () => {
         break;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-rose-50 via-purple-50 to-indigo-50 p-4 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-rose-400 to-purple-400 rounded-full flex items-center justify-center animate-pulse">
+            <Heart className="w-8 h-8 text-white" />
+          </div>
+          <p className="text-muted-foreground">Loading your journey...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (currentView === 'welcome') {
     return (
@@ -113,6 +124,10 @@ const AppContent: React.FC = () => {
         </Card>
       </div>
     );
+  }
+
+  if (currentView === 'auth') {
+    return <AuthPage onSuccess={handleAuthSuccess} />;
   }
 
   if (currentView === 'quiz') {

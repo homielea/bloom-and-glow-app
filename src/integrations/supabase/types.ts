@@ -9,7 +9,108 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      daily_checkins: {
+        Row: {
+          body_temperature: string
+          created_at: string
+          date: string
+          energy: number
+          id: string
+          libido: number
+          mood: number
+          notes: string | null
+          sleep: number
+          stress: number
+          user_id: string
+        }
+        Insert: {
+          body_temperature: string
+          created_at?: string
+          date: string
+          energy: number
+          id?: string
+          libido: number
+          mood: number
+          notes?: string | null
+          sleep: number
+          stress: number
+          user_id: string
+        }
+        Update: {
+          body_temperature?: string
+          created_at?: string
+          date?: string
+          energy?: number
+          id?: string
+          libido?: number
+          mood?: number
+          notes?: string | null
+          sleep?: number
+          stress?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          onboarding_completed: boolean | null
+          persona_description: string | null
+          persona_learning_path: Json | null
+          persona_motivational_tone: string | null
+          persona_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          onboarding_completed?: boolean | null
+          persona_description?: string | null
+          persona_learning_path?: Json | null
+          persona_motivational_tone?: string | null
+          persona_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          onboarding_completed?: boolean | null
+          persona_description?: string | null
+          persona_learning_path?: Json | null
+          persona_motivational_tone?: string | null
+          persona_type?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      quiz_answers: {
+        Row: {
+          answer_value: Json
+          created_at: string
+          id: string
+          question_id: string
+          user_id: string
+        }
+        Insert: {
+          answer_value: Json
+          created_at?: string
+          id?: string
+          question_id: string
+          user_id: string
+        }
+        Update: {
+          answer_value?: Json
+          created_at?: string
+          id?: string
+          question_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

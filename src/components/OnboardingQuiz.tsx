@@ -10,11 +10,14 @@ import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { quizQuestions } from '../data/quizQuestions';
 import { useApp } from '../contexts/AppContext';
 import { QuizAnswer } from '../types';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 const OnboardingQuiz: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswer[]>([]);
-  const { setQuizAnswers, assignPersona, user, setUser } = useApp();
+  const [saving, setSaving] = useState(false);
+  const { setQuizAnswers, assignPersona, session, setUser } = useApp();
 
   const currentQuestionData = quizQuestions[currentQuestion];
   const isLastQuestion = currentQuestion === quizQuestions.length - 1;
@@ -25,18 +28,107 @@ const OnboardingQuiz: React.FC<{ onComplete: () => void }> = ({ onComplete }) =>
     setAnswers(newAnswers);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (isLastQuestion) {
-      setQuizAnswers(answers);
-      const persona = assignPersona(answers);
+      setSaving(true);
       
-      if (user) {
-        const updatedUser = { ...user, persona, onboardingCompleted: true };
-        setUser(updatedUser);
-        localStorage.setItem('menopause-app-user', JSON.stringify(updatedUser));
+      try {
+        if (!session?.user) {
+          toast({
+            title: "Error",
+            description: "Please log in to save your quiz results.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // Save quiz answers to database
+        const quizAnswersToSave = answers.map(answer => ({
+          user_id: session.user.id,
+          question_id: answer.questionId,
+          answer_value: answer.value
+        }));
+
+        const { error: answersError } = await supabase
+          .from('quiz_answers')
+          .insert(quizAnswersToSave);
+
+        if (answersError) {
+          console.error('Error saving quiz answers:', answersError);
+          toast({
+            title: "Error",
+            description: "Failed to save quiz answers. Please try again.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // Assign persona and update profile
+        const persona = assignPersona(answers);
+        
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            persona_type: persona.type,
+            persona_description: persona.description,
+            persona_learning_path: persona.learningPath,
+            persona_motivational_tone: persona.motivationalTone,
+            onboarding_completed: true,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', session.user.id);
+
+        if (profileError) {
+          console.error('Error updating profile:', profileError);
+          toast({
+            title: "Error",
+            description: "Failed to save your persona. Please try again.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // Update local user state
+        setQuizAnswers(answers);
+        
+        // Fetch updated user profile
+        const { data: updatedProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        if (updatedProfile) {
+          setUser({
+            id: updatedProfile.id,
+            email: updatedProfile.email,
+            onboardingCompleted: updatedProfile.onboarding_completed,
+            createdAt: updatedProfile.created_at,
+            persona: {
+              type: updatedProfile.persona_type as 'Explorer' | 'Phoenix' | 'Nurturer' | 'Warrior',
+              description: updatedProfile.persona_description,
+              learningPath: updatedProfile.persona_learning_path,
+              motivationalTone: updatedProfile.persona_motivational_tone
+            }
+          });
+        }
+
+        toast({
+          title: "Quiz completed! 🎉",
+          description: "Your persona has been assigned and saved.",
+        });
+        
+        onComplete();
+      } catch (error) {
+        console.error('Error completing quiz:', error);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setSaving(false);
       }
-      
-      onComplete();
     } else {
       setCurrentQuestion(prev => prev + 1);
     }
@@ -159,10 +251,10 @@ const OnboardingQuiz: React.FC<{ onComplete: () => void }> = ({ onComplete }) =>
             
             <Button
               onClick={handleNext}
-              disabled={!canProceed}
+              disabled={!canProceed || saving}
               className="bg-gradient-to-r from-rose-400 to-purple-400 hover:from-rose-500 hover:to-purple-500"
             >
-              {isLastQuestion ? 'Complete' : 'Next'}
+              {saving ? 'Saving...' : (isLastQuestion ? 'Complete' : 'Next')}
               <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
