@@ -15,6 +15,9 @@ interface AppContextType {
   assignPersona: (answers: QuizAnswer[]) => MenopausePersona;
   saveCheckIn: (checkIn: Omit<DailyCheckIn, 'id' | 'userId'>) => Promise<void>;
   getCheckInHistory: () => DailyCheckIn[];
+  getTrackerConnections: () => Promise<HealthTrackerConnection[]>;
+  syncTrackerData: (connectionId: string) => Promise<HealthTrackerData[]>;
+  getLatestTrackerData: (dataType: string, days?: number) => Promise<HealthTrackerData | null>;
   signOut: () => Promise<void>;
 }
 
@@ -196,8 +199,72 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const getCheckInHistory = (): DailyCheckIn[] => {
-    // This will be implemented to fetch from Supabase in the future
+    // TODO: Implement fetching from Supabase with tracker data integration
     return [];
+  };
+
+  const getTrackerConnections = async () => {
+    if (!session?.user) return [];
+    
+    try {
+      const { data, error } = await supabase
+        .from('health_tracker_connections')
+        .select('*')
+        .eq('sync_status', 'active');
+
+      if (error) {
+        console.error('Error fetching tracker connections:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error in getTrackerConnections:', error);
+      return [];
+    }
+  };
+
+  const syncTrackerData = async (connectionId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-health-data', {
+        body: { connectionId, days: 7 }
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error syncing tracker data:', error);
+      throw error;
+    }
+  };
+
+  const getLatestTrackerData = async (dataType: string, days: number = 1) => {
+    if (!session?.user) return null;
+    
+    try {
+      const { data, error } = await supabase
+        .from('health_tracker_data')
+        .select(`
+          *,
+          health_tracker_connections!inner(user_id)
+        `)
+        .eq('health_tracker_connections.user_id', session.user.id)
+        .eq('data_type', dataType)
+        .gte('recorded_date', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+        .order('recorded_date', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching tracker data:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error in getLatestTrackerData:', error);
+      return null;
+    }
   };
 
   const signOut = async () => {
@@ -220,6 +287,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         assignPersona,
         saveCheckIn,
         getCheckInHistory,
+        getTrackerConnections,
+        syncTrackerData,
+        getLatestTrackerData,
         signOut
       }}
     >

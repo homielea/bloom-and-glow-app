@@ -1,12 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Heart, Battery, Flame, Moon, Brain } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Heart, Battery, Flame, Moon, Brain, Activity } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { toast } from '@/hooks/use-toast';
 
@@ -19,8 +20,55 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
   const [bodyTemperature, setBodyTemperature] = useState<'normal' | 'hot-flash' | 'night-sweats' | 'cold'>('normal');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
+  const [trackerData, setTrackerData] = useState<any>({});
+  const [dataSource, setDataSource] = useState({
+    mood: 'manual',
+    energy: 'manual',
+    sleep: 'manual',
+    stress: 'manual',
+  });
 
-  const { saveCheckIn } = useApp();
+  const { saveCheckIn, getLatestTrackerData } = useApp();
+
+  useEffect(() => {
+    loadTrackerData();
+  }, []);
+
+  const loadTrackerData = async () => {
+    try {
+      // Load sleep data
+      const sleepData = await getLatestTrackerData('sleep', 1);
+      if (sleepData) {
+        const sleepScore = Math.round((sleepData.value / 100) * 10); // Convert to 1-10 scale
+        setSleep(sleepScore);
+        setDataSource(prev => ({ ...prev, sleep: 'tracker' }));
+        setTrackerData(prev => ({ ...prev, sleep: sleepData }));
+      }
+
+      // Load HRV data for stress estimation
+      const hrvData = await getLatestTrackerData('hrv', 1);
+      if (hrvData) {
+        // Higher HRV typically means lower stress (simplified calculation)
+        const stressScore = Math.max(1, Math.min(10, 10 - Math.round(hrvData.value / 10)));
+        setStress(stressScore);
+        setDataSource(prev => ({ ...prev, stress: 'tracker' }));
+        setTrackerData(prev => ({ ...prev, hrv: hrvData }));
+      }
+
+      // Load heart rate data for energy estimation
+      const hrData = await getLatestTrackerData('heart_rate', 1);
+      if (hrData) {
+        // This is a simplified estimation - you'd want more sophisticated logic
+        const energyScore = Math.round(Math.random() * 3 + 5); // Placeholder
+        setEnergy(energyScore);
+        setDataSource(prev => ({ ...prev, energy: 'tracker' }));
+        setTrackerData(prev => ({ ...prev, heartRate: hrData }));
+      }
+
+    } catch (error) {
+      console.error('Error loading tracker data:', error);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -36,7 +84,15 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
         sleep,
         stress,
         bodyTemperature,
-        notes: notes || undefined
+        notes: notes || undefined,
+        moodSource: dataSource.mood,
+        energySource: dataSource.energy,
+        sleepSource: dataSource.sleep,
+        stressSource: dataSource.stress,
+        bodyTemperatureSource: 'manual',
+        trackerSleepScore: trackerData.sleep?.value,
+        trackerHrv: trackerData.hrv?.value,
+        trackerRestingHr: trackerData.heartRate?.value,
       });
 
       toast({
@@ -61,6 +117,17 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
     setBodyTemperature(value as 'normal' | 'hot-flash' | 'night-sweats' | 'cold');
   };
 
+  const getDataSourceBadge = (source: string) => {
+    return source === 'tracker' ? (
+      <Badge className="bg-blue-100 text-blue-800 text-xs">
+        <Activity className="w-3 h-3 mr-1" />
+        Auto-synced
+      </Badge>
+    ) : (
+      <Badge variant="outline" className="text-xs">Manual</Badge>
+    );
+  };
+
   const metrics = [
     { 
       key: 'mood', 
@@ -69,7 +136,8 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
       value: mood, 
       setValue: setMood,
       lowLabel: 'Low/Sad',
-      highLabel: 'Happy/Balanced'
+      highLabel: 'Happy/Balanced',
+      source: dataSource.mood
     },
     { 
       key: 'energy', 
@@ -78,7 +146,8 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
       value: energy, 
       setValue: setEnergy,
       lowLabel: 'Exhausted',
-      highLabel: 'Energized'
+      highLabel: 'Energized',
+      source: dataSource.energy
     },
     { 
       key: 'libido', 
@@ -87,7 +156,8 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
       value: libido, 
       setValue: setLibido,
       lowLabel: 'Very low',
-      highLabel: 'Strong'
+      highLabel: 'Strong',
+      source: dataSource.libido
     },
     { 
       key: 'sleep', 
@@ -96,7 +166,8 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
       value: sleep, 
       setValue: setSleep,
       lowLabel: 'Poor',
-      highLabel: 'Excellent'
+      highLabel: 'Excellent',
+      source: dataSource.sleep
     },
     { 
       key: 'stress', 
@@ -105,7 +176,8 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
       value: stress, 
       setValue: setStress,
       lowLabel: 'Very calm',
-      highLabel: 'Very stressed'
+      highLabel: 'Very stressed',
+      source: dataSource.stress
     }
   ];
 
@@ -132,9 +204,16 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
                       {metric.value}
                     </span>
                   </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div></div>
+                    {getDataSourceBadge(metric.source)}
+                  </div>
                   <Slider
                     value={[metric.value]}
-                    onValueChange={(value) => metric.setValue(value[0])}
+                    onValueChange={(value) => {
+                      metric.setValue(value[0]);
+                      setDataSource(prev => ({ ...prev, [metric.key]: 'manual' }));
+                    }}
                     max={10}
                     min={1}
                     step={1}

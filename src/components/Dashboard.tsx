@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Heart, BookOpen, Headphones, TrendingUp, Calendar, Sparkles } from 'lucide-react';
+import { Heart, BookOpen, Headphones, TrendingUp, Calendar, Sparkles, Activity } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 
 interface DashboardProps {
@@ -53,7 +53,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         </Card>
 
         {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           <Card 
             className="cursor-pointer hover:shadow-md transition-shadow" 
             onClick={() => onNavigate('checkin')}
@@ -106,6 +106,23 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             <CardContent>
               <CardDescription>
                 Audio practices for inner strength
+              </CardDescription>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow" 
+            onClick={() => onNavigate('trackers')}
+          >
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Activity className="w-5 h-5 text-orange-500" />
+                <CardTitle className="text-lg">Health Trackers</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                Connect fitness devices for automatic tracking
               </CardDescription>
             </CardContent>
           </Card>
