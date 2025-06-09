@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -71,7 +70,9 @@ const OnboardingQuiz: React.FC<{ onComplete: () => void }> = ({ onComplete }) =>
           .update({
             persona_type: persona.type,
             persona_description: persona.description,
-            persona_learning_path: persona.learningPath,
+            persona_learning_path: Array.isArray(persona.learningPath) 
+              ? persona.learningPath as string[]
+              : [],
             persona_motivational_tone: persona.motivationalTone,
             onboarding_completed: true,
             updated_at: new Date().toISOString()
@@ -107,7 +108,9 @@ const OnboardingQuiz: React.FC<{ onComplete: () => void }> = ({ onComplete }) =>
             persona: {
               type: updatedProfile.persona_type as 'Explorer' | 'Phoenix' | 'Nurturer' | 'Warrior',
               description: updatedProfile.persona_description,
-              learningPath: updatedProfile.persona_learning_path,
+              learningPath: Array.isArray(updatedProfile.persona_learning_path) 
+                ? updatedProfile.persona_learning_path as string[]
+                : [],
               motivationalTone: updatedProfile.persona_motivational_tone
             }
           });

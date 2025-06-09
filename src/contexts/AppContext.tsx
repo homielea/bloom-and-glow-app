@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { User as AppUser, MenopausePersona, DailyCheckIn, QuizAnswer } from '../types';
@@ -90,7 +89,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           persona: profile.persona_type ? {
             type: profile.persona_type as 'Explorer' | 'Phoenix' | 'Nurturer' | 'Warrior',
             description: profile.persona_description || '',
-            learningPath: profile.persona_learning_path || [],
+            learningPath: Array.isArray(profile.persona_learning_path) 
+              ? profile.persona_learning_path as string[]
+              : [],
             motivationalTone: profile.persona_motivational_tone || ''
           } : undefined
         };
