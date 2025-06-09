@@ -43,6 +43,10 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
     onComplete();
   };
 
+  const handleBodyTemperatureChange = (value: string) => {
+    setBodyTemperature(value as 'normal' | 'hot-flash' | 'night-sweats' | 'cold');
+  };
+
   const metrics = [
     { 
       key: 'mood', 
@@ -132,7 +136,7 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
 
             <div className="space-y-3">
               <Label className="font-medium">Body Temperature</Label>
-              <RadioGroup value={bodyTemperature} onValueChange={setBodyTemperature}>
+              <RadioGroup value={bodyTemperature} onValueChange={handleBodyTemperatureChange}>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="normal" id="normal" />
                   <Label htmlFor="normal">Normal</Label>

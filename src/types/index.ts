@@ -16,7 +16,7 @@ export interface MenopausePersona {
 
 export interface QuizAnswer {
   questionId: string;
-  value: number | string;
+  value: number | string | string[];
 }
 
 export interface DailyCheckIn {

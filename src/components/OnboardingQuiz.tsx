@@ -77,19 +77,19 @@ const OnboardingQuiz: React.FC<{ onComplete: () => void }> = ({ onComplete }) =>
         );
 
       case 'multiple':
+        const currentMultipleValues = Array.isArray(currentAnswer?.value) ? currentAnswer.value : [];
         return (
           <div className="space-y-3">
             {currentQuestionData.options?.map((option, index) => (
               <div key={index} className="flex items-center space-x-2">
                 <Checkbox
                   id={`option-${index}`}
-                  checked={(currentAnswer?.value as string[] || []).includes(option)}
+                  checked={currentMultipleValues.includes(option)}
                   onCheckedChange={(checked) => {
-                    const currentValues = (currentAnswer?.value as string[]) || [];
                     if (checked) {
-                      handleAnswer([...currentValues, option]);
+                      handleAnswer([...currentMultipleValues, option]);
                     } else {
-                      handleAnswer(currentValues.filter(v => v !== option));
+                      handleAnswer(currentMultipleValues.filter(v => v !== option));
                     }
                   }}
                 />
@@ -104,7 +104,7 @@ const OnboardingQuiz: React.FC<{ onComplete: () => void }> = ({ onComplete }) =>
       case 'single':
         return (
           <RadioGroup
-            value={currentAnswer?.value as string || ''}
+            value={currentAnswer?.value?.toString() || ''}
             onValueChange={(value) => handleAnswer(parseInt(value))}
           >
             {currentQuestionData.options?.map((option, index) => (
