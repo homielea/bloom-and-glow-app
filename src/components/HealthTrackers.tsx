@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,16 +8,7 @@ import { Smartphone, Watch, Activity, Wifi, WifiOff, RefreshCw, Trash2 } from 'l
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '../contexts/AppContext';
 import { toast } from '@/hooks/use-toast';
-
-interface HealthTrackerConnection {
-  id: string;
-  provider: string;
-  device_name: string;
-  connected_at: string;
-  last_sync_at: string | null;
-  sync_status: 'active' | 'error' | 'disconnected';
-  sync_error_message: string | null;
-}
+import { HealthTrackerConnection } from '../types';
 
 const HealthTrackers: React.FC = () => {
   const [connections, setConnections] = useState<HealthTrackerConnection[]>([]);
@@ -38,7 +28,14 @@ const HealthTrackers: React.FC = () => {
         .order('connected_at', { ascending: false });
 
       if (error) throw error;
-      setConnections(data || []);
+      
+      // Type cast to ensure sync_status is properly typed
+      const typedConnections: HealthTrackerConnection[] = (data || []).map(connection => ({
+        ...connection,
+        sync_status: connection.sync_status as 'active' | 'error' | 'disconnected'
+      }));
+      
+      setConnections(typedConnections);
     } catch (error) {
       console.error('Error fetching connections:', error);
       toast({

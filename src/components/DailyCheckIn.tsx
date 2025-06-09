@@ -24,6 +24,7 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
   const [dataSource, setDataSource] = useState({
     mood: 'manual',
     energy: 'manual',
+    libido: 'manual',
     sleep: 'manual',
     stress: 'manual',
   });

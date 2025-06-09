@@ -1,6 +1,7 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { User as AppUser, MenopausePersona, DailyCheckIn, QuizAnswer } from '../types';
+import { User as AppUser, MenopausePersona, DailyCheckIn, QuizAnswer, HealthTrackerConnection, HealthTrackerData } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AppContextType {
