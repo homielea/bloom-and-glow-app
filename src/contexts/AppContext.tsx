@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { User as AppUser, MenopausePersona, DailyCheckIn, QuizAnswer, HealthTrackerConnection, HealthTrackerData } from '../types';
@@ -204,13 +203,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return [];
   };
 
-  const getTrackerConnections = async () => {
+  const getTrackerConnections = async (): Promise<HealthTrackerConnection[]> => {
     if (!session?.user) return [];
     
     try {
       const { data, error } = await supabase
         .from('health_tracker_connections')
-        .select('*')
+        .select('id, provider, device_name, connected_at, last_sync_at, sync_status, sync_error_message')
         .eq('sync_status', 'active');
 
       if (error) {
@@ -218,7 +217,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return [];
       }
 
-      return data || [];
+      // Map and type-cast the data to match our interface
+      const typedConnections: HealthTrackerConnection[] = (data || []).map(connection => ({
+        id: connection.id,
+        provider: connection.provider,
+        device_name: connection.device_name || '',
+        connected_at: connection.connected_at,
+        last_sync_at: connection.last_sync_at,
+        sync_status: connection.sync_status as 'active' | 'error' | 'disconnected',
+        sync_error_message: connection.sync_error_message
+      }));
+
+      return typedConnections;
     } catch (error) {
       console.error('Error in getTrackerConnections:', error);
       return [];
