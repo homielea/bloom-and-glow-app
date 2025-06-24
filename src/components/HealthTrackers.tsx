@@ -9,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '../contexts/AppContext';
 import { toast } from '@/hooks/use-toast';
 import { HealthTrackerConnection } from '../types';
+import AppleHealthConnect from './AppleHealthConnect';
+import GoogleFitConnect from './GoogleFitConnect';
 
 const HealthTrackers: React.FC = () => {
   const [connections, setConnections] = useState<HealthTrackerConnection[]>([]);
@@ -250,7 +252,10 @@ const HealthTrackers: React.FC = () => {
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Available Integrations</h2>
           
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+            <AppleHealthConnect />
+            <GoogleFitConnect />
+            
             <Card className="hover:shadow-md transition-shadow">
               <CardHeader>
                 <div className="flex items-center gap-3">
@@ -305,10 +310,10 @@ const HealthTrackers: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline">Apple Health</Badge>
-              <Badge variant="outline">Google Fit</Badge>
               <Badge variant="outline">Garmin</Badge>
+              <Badge variant="outline">Samsung Health</Badge>
               <Badge variant="outline">Withings</Badge>
+              <Badge variant="outline">Polar</Badge>
             </div>
           </CardContent>
         </Card>
