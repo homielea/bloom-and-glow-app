@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Heart, BookOpen, Headphones, TrendingUp, Calendar, Sparkles, Activity } from 'lucide-react';
+import { Heart, BookOpen, Headphones, TrendingUp, Calendar, Sparkles, Activity, Brain } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 
 interface DashboardProps {
@@ -53,7 +52,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         </Card>
 
         {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
           <Card 
             className="cursor-pointer hover:shadow-md transition-shadow" 
             onClick={() => onNavigate('checkin')}
@@ -141,6 +140,28 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               <CardDescription>
                 View your wellness patterns
               </CardDescription>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow" 
+            onClick={() => onNavigate('advanced-analytics')}
+          >
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Brain className="w-5 h-5 text-indigo-500" />
+                <CardTitle className="text-lg">Advanced Analytics</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                AI-powered insights and predictions
+              </CardDescription>
+              {checkInHistory.length >= 7 && (
+                <div className="mt-2 text-sm font-medium text-indigo-600">
+                  Ready for analysis!
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

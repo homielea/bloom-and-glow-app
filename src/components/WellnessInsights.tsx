@@ -1,13 +1,38 @@
-
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { TrendingUp, Calendar, Heart, Battery } from 'lucide-react';
+import { TrendingUp, Calendar, Heart, Battery, Brain, Zap, Target } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
+import { AnalyticsEngine } from '../utils/analyticsEngine';
+import { RecommendationEngine } from '../utils/recommendationEngine';
+import { contentLibrary } from '../data/contentLibrary';
+import PredictiveInsightsCard from './PredictiveInsightsCard';
 
-const WellnessInsights: React.FC = () => {
+interface WellnessInsightsProps {
+  onNavigateToAdvanced?: () => void;
+}
+
+const WellnessInsights: React.FC<WellnessInsightsProps> = ({ onNavigateToAdvanced }) => {
   const { getCheckInHistory } = useApp();
   const checkInHistory = getCheckInHistory();
+
+  const analytics = useMemo(() => {
+    if (checkInHistory.length < 7) return null;
+
+    const correlations = AnalyticsEngine.analyzeCorrelations(checkInHistory);
+    const predictions = AnalyticsEngine.generatePredictiveInsights(checkInHistory);
+    const patterns = AnalyticsEngine.detectPatterns(checkInHistory);
+    const recommendations = RecommendationEngine.generateRecommendations(
+      checkInHistory,
+      predictions,
+      correlations,
+      patterns,
+      contentLibrary
+    );
+
+    return { correlations, predictions, patterns, recommendations };
+  }, [checkInHistory]);
 
   // Prepare data for charts
   const chartData = checkInHistory.slice(-7).map(checkin => ({
@@ -68,43 +93,120 @@ const WellnessInsights: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-purple-50 to-indigo-50 p-4">
       <div className="max-w-6xl mx-auto space-y-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-2">Wellness Insights</h1>
-          <p className="text-muted-foreground">
-            Understanding your patterns over the last {checkInHistory.length} check-ins
-          </p>
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold mb-2">Wellness Insights</h1>
+            <p className="text-muted-foreground">
+              Understanding your patterns over the last {checkInHistory.length} check-ins
+            </p>
+          </div>
+          {analytics && (
+            <Button 
+              onClick={onNavigateToAdvanced}
+              className="bg-gradient-to-r from-purple-400 to-indigo-400 hover:from-purple-500 hover:to-indigo-500"
+            >
+              <Brain className="w-4 h-4 mr-2" />
+              Advanced Analytics
+            </Button>
+          )}
         </div>
 
-        {/* Overview Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-          {[
-            { key: 'mood', label: 'Average Mood', icon: Heart, value: averages.mood },
-            { key: 'energy', label: 'Average Energy', icon: Battery, value: averages.energy },
-            { key: 'stress', label: 'Average Stress', icon: TrendingUp, value: averages.stress },
-            { key: 'sleep', label: 'Average Sleep', icon: Calendar, value: averages.sleep },
-            { key: 'libido', label: 'Average Libido', icon: Heart, value: averages.libido }
-          ].map((metric) => {
-            const IconComponent = metric.icon;
-            return (
-              <Card key={metric.key}>
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-2">
-                    <IconComponent className="w-4 h-4" />
-                    <CardDescription className="text-sm">{metric.label}</CardDescription>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className={`text-2xl font-bold ${getScoreColor(metric.value)}`}>
-                    {metric.value}/10
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {getScoreDescription(metric.key, metric.value)}
-                  </p>
-                </CardContent>
-              </Card>
-            );
-          })}
+        {/* Enhanced Overview with Predictive Insights */}
+        <div className="grid gap-4 lg:grid-cols-3">
+          {/* Overview Cards */}
+          <div className="lg:col-span-2">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+              {[
+                { key: 'mood', label: 'Average Mood', icon: Heart, value: averages.mood },
+                { key: 'energy', label: 'Average Energy', icon: Battery, value: averages.energy },
+                { key: 'stress', label: 'Average Stress', icon: TrendingUp, value: averages.stress },
+                { key: 'sleep', label: 'Average Sleep', icon: Calendar, value: averages.sleep },
+                { key: 'libido', label: 'Average Libido', icon: Heart, value: averages.libido }
+              ].map((metric) => {
+                const IconComponent = metric.icon;
+                return (
+                  <Card key={metric.key}>
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center gap-2">
+                        <IconComponent className="w-4 h-4" />
+                        <CardDescription className="text-sm">{metric.label}</CardDescription>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className={`text-2xl font-bold ${getScoreColor(metric.value)}`}>
+                        {metric.value}/10
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {getScoreDescription(metric.key, metric.value)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+          
+          {/* Predictive Insights Card */}
+          <div>
+            {analytics && (
+              <PredictiveInsightsCard 
+                insights={analytics.predictions} 
+                onViewDetails={() => onNavigateToAdvanced?.()} 
+              />
+            )}
+          </div>
         </div>
+
+        {/* Intelligent Recommendations */}
+        {analytics && analytics.recommendations.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="w-5 h-5" />
+                AI Recommendations
+              </CardTitle>
+              <CardDescription>Personalized suggestions based on your patterns</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2">
+                {analytics.recommendations.slice(0, 4).map((rec) => (
+                  <div key={rec.id} className="p-4 bg-muted/30 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium text-sm">{rec.title}</h4>
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        rec.priority === 'high' ? 'bg-red-100 text-red-800' :
+                        rec.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-green-100 text-green-800'
+                      }`}>
+                        {rec.priority}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      {rec.description}
+                    </p>
+                    <div className="text-xs">
+                      <span className="font-medium">First step: </span>
+                      <span className="text-muted-foreground">
+                        {rec.actionSteps[0]}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {analytics.recommendations.length > 4 && (
+                <div className="mt-4 text-center">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={onNavigateToAdvanced}
+                  >
+                    View All Recommendations ({analytics.recommendations.length})
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Trend Charts */}
         <div className="grid gap-6 lg:grid-cols-2">
