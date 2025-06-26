@@ -75,6 +75,265 @@ export type Database = {
         }
         Relationships: []
       }
+      expert_profiles: {
+        Row: {
+          bio: string | null
+          created_at: string
+          credentials: string
+          id: string
+          professional_title: string
+          specialization: string[] | null
+          updated_at: string
+          user_id: string | null
+          verification_status: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          credentials: string
+          id?: string
+          professional_title: string
+          specialization?: string[] | null
+          updated_at?: string
+          user_id?: string | null
+          verification_status?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          credentials?: string
+          id?: string
+          professional_title?: string
+          specialization?: string[] | null
+          updated_at?: string
+          user_id?: string | null
+          verification_status?: string | null
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
+      forum_posts: {
+        Row: {
+          content: string
+          created_at: string
+          forum_id: string | null
+          id: string
+          is_locked: boolean | null
+          is_pinned: boolean | null
+          like_count: number | null
+          reply_count: number | null
+          title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          forum_id?: string | null
+          id?: string
+          is_locked?: boolean | null
+          is_pinned?: boolean | null
+          like_count?: number | null
+          reply_count?: number | null
+          title: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          forum_id?: string | null
+          id?: string
+          is_locked?: boolean | null
+          is_pinned?: boolean | null
+          like_count?: number | null
+          reply_count?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_posts_forum_id_fkey"
+            columns: ["forum_id"]
+            isOneToOne: false
+            referencedRelation: "forums"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_replies: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_solution: boolean | null
+          like_count: number | null
+          parent_reply_id: string | null
+          post_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_solution?: boolean | null
+          like_count?: number | null
+          parent_reply_id?: string | null
+          post_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_solution?: boolean | null
+          like_count?: number | null
+          parent_reply_id?: string | null
+          post_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_replies_parent_reply_id_fkey"
+            columns: ["parent_reply_id"]
+            isOneToOne: false
+            referencedRelation: "forum_replies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_replies_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "forum_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forums: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_expert_moderated: boolean | null
+          member_count: number | null
+          post_count: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_expert_moderated?: boolean | null
+          member_count?: number | null
+          post_count?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_expert_moderated?: boolean | null
+          member_count?: number | null
+          post_count?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      group_memberships: {
+        Row: {
+          group_id: string | null
+          id: string
+          joined_at: string
+          role: string | null
+          user_id: string | null
+        }
+        Insert: {
+          group_id?: string | null
+          id?: string
+          joined_at?: string
+          role?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          group_id?: string | null
+          id?: string
+          joined_at?: string
+          role?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_memberships_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "support_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_messages: {
+        Row: {
+          created_at: string
+          group_id: string | null
+          id: string
+          message: string
+          message_type: string | null
+          reply_to_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          message: string
+          message_type?: string | null
+          reply_to_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          message?: string
+          message_type?: string | null
+          reply_to_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "support_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "group_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       health_tracker_connections: {
         Row: {
           access_token: string
@@ -216,9 +475,13 @@ export type Database = {
       }
       profiles: {
         Row: {
+          allow_anonymous_posting: boolean | null
+          community_bio: string | null
+          community_display_name: string | null
           created_at: string
           email: string
           id: string
+          is_community_moderator: boolean | null
           onboarding_completed: boolean | null
           persona_description: string | null
           persona_learning_path: Json | null
@@ -227,9 +490,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          allow_anonymous_posting?: boolean | null
+          community_bio?: string | null
+          community_display_name?: string | null
           created_at?: string
           email: string
           id: string
+          is_community_moderator?: boolean | null
           onboarding_completed?: boolean | null
           persona_description?: string | null
           persona_learning_path?: Json | null
@@ -238,9 +505,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          allow_anonymous_posting?: boolean | null
+          community_bio?: string | null
+          community_display_name?: string | null
           created_at?: string
           email?: string
           id?: string
+          is_community_moderator?: boolean | null
           onboarding_completed?: boolean | null
           persona_description?: string | null
           persona_learning_path?: Json | null
@@ -271,6 +542,87 @@ export type Database = {
           id?: string
           question_id?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      support_groups: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          current_members: number | null
+          description: string | null
+          group_type: string
+          id: string
+          max_members: number | null
+          moderator_ids: string[] | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          current_members?: number | null
+          description?: string | null
+          group_type: string
+          id?: string
+          max_members?: number | null
+          moderator_ids?: string[] | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          current_members?: number | null
+          description?: string | null
+          group_type?: string
+          id?: string
+          max_members?: number | null
+          moderator_ids?: string[] | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_reports: {
+        Row: {
+          content_id: string | null
+          content_type: string
+          created_at: string
+          description: string | null
+          id: string
+          reason: string
+          reported_user_id: string | null
+          reporter_id: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string | null
+        }
+        Insert: {
+          content_id?: string | null
+          content_type: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          reason: string
+          reported_user_id?: string | null
+          reporter_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string | null
+        }
+        Update: {
+          content_id?: string | null
+          content_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          reason?: string
+          reported_user_id?: string | null
+          reporter_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string | null
         }
         Relationships: []
       }

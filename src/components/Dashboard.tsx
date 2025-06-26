@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Heart, BookOpen, Headphones, TrendingUp, Calendar, Sparkles, Activity, Brain } from 'lucide-react';
+import { Heart, BookOpen, Headphones, TrendingUp, Calendar, Sparkles, Activity, Brain, Users } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 
 interface DashboardProps {
@@ -53,6 +53,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
         {/* Quick Actions */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
+          {/* Existing cards... keep existing code (Daily Check-In card) */}
           <Card 
             className="cursor-pointer hover:shadow-md transition-shadow" 
             onClick={() => onNavigate('checkin')}
@@ -75,6 +76,25 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </CardContent>
           </Card>
 
+          {/* New Community Card */}
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow" 
+            onClick={() => onNavigate('community')}
+          >
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-teal-500" />
+                <CardTitle className="text-lg">Community</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                Connect with others on similar journeys
+              </CardDescription>
+            </CardContent>
+          </Card>
+
+          {/* Keep existing cards... */}
           <Card 
             className="cursor-pointer hover:shadow-md transition-shadow" 
             onClick={() => onNavigate('content')}
@@ -162,6 +182,24 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                   Ready for analysis!
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* New Personalization Card */}
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow" 
+            onClick={() => onNavigate('personalization')}
+          >
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Brain className="w-5 h-5 text-cyan-500" />
+                <CardTitle className="text-lg">AI Personalization</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                Adaptive learning and smart recommendations
+              </CardDescription>
             </CardContent>
           </Card>
         </div>

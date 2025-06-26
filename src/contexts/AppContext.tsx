@@ -199,8 +199,59 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const getCheckInHistory = (): DailyCheckIn[] => {
-    // TODO: Implement fetching from Supabase with tracker data integration
-    return [];
+    // Enhanced implementation with tracker data integration
+    const [checkIns, setCheckIns] = useState<DailyCheckIn[]>([]);
+    
+    useEffect(() => {
+      if (session?.user) {
+        fetchCheckInHistory();
+      }
+    }, [session]);
+
+    const fetchCheckInHistory = async () => {
+      if (!session?.user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('daily_checkins')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .order('date', { ascending: false })
+          .limit(30);
+
+        if (error) {
+          console.error('Error fetching check-in history:', error);
+          return;
+        }
+
+        const mappedCheckIns: DailyCheckIn[] = data.map(item => ({
+          id: item.id,
+          userId: item.user_id,
+          date: item.date,
+          mood: item.mood,
+          energy: item.energy,
+          libido: item.libido,
+          sleep: item.sleep,
+          stress: item.stress,
+          bodyTemperature: item.body_temperature as 'normal' | 'hot-flash' | 'night-sweats' | 'cold',
+          notes: item.notes,
+          moodSource: item.mood_source,
+          energySource: item.energy_source,
+          sleepSource: item.sleep_source,
+          stressSource: item.stress_source,
+          bodyTemperatureSource: item.body_temperature_source,
+          trackerSleepScore: item.tracker_sleep_score,
+          trackerHrv: item.tracker_hrv,
+          trackerRestingHr: item.tracker_resting_hr
+        }));
+
+        setCheckIns(mappedCheckIns);
+      } catch (error) {
+        console.error('Error in fetchCheckInHistory:', error);
+      }
+    };
+
+    return checkIns;
   };
 
   const getTrackerConnections = async (): Promise<HealthTrackerConnection[]> => {
@@ -284,6 +335,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSession(null);
   };
 
+  
   return (
     <AppContext.Provider
       value={{
