@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -54,7 +53,7 @@ const CommunityHub: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (forumsError) throw forumsError;
-      setForums(forumsData || []);
+      setForums((forumsData || []) as Forum[]);
 
       // Fetch support groups
       const { data: groupsData, error: groupsError } = await supabase
@@ -64,7 +63,7 @@ const CommunityHub: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (groupsError) throw groupsError;
-      setSupportGroups(groupsData || []);
+      setSupportGroups((groupsData || []) as SupportGroup[]);
 
       // Fetch verified experts
       const { data: expertsData, error: expertsError } = await supabase
@@ -74,7 +73,7 @@ const CommunityHub: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (expertsError) throw expertsError;
-      setExperts(expertsData || []);
+      setExperts((expertsData || []) as ExpertProfile[]);
 
     } catch (error) {
       console.error('Error fetching community data:', error);
@@ -97,7 +96,7 @@ const CommunityHub: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setForumPosts(data || []);
+      setForumPosts((data || []) as ForumPost[]);
     } catch (error) {
       console.error('Error fetching forum posts:', error);
       toast.error('Failed to load forum posts');
@@ -116,7 +115,7 @@ const CommunityHub: React.FC = () => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setPostReplies(data || []);
+      setPostReplies((data || []) as ForumReply[]);
     } catch (error) {
       console.error('Error fetching post replies:', error);
       toast.error('Failed to load replies');
