@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Heart, BookOpen, Headphones, TrendingUp, Calendar, Sparkles, Activity, Brain, Users } from 'lucide-react';
+import { Heart, BookOpen, Headphones, TrendingUp, Calendar, Sparkles, Activity, Brain, Users, FileText, Stethoscope, Target } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 
 interface DashboardProps {
@@ -52,8 +52,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         </Card>
 
         {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
-          {/* Existing cards... keep existing code (Daily Check-In card) */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {/* Core Features */}
           <Card 
             className="cursor-pointer hover:shadow-md transition-shadow" 
             onClick={() => onNavigate('checkin')}
@@ -76,7 +76,70 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </CardContent>
           </Card>
 
-          {/* New Community Card */}
+          {/* Phase 3: AI-Powered Content Curation */}
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow" 
+            onClick={() => onNavigate('intelligent-content')}
+          >
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Brain className="w-5 h-5 text-purple-500" />
+                <CardTitle className="text-lg">Smart Learning</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                AI-powered content recommendations tailored to you
+              </CardDescription>
+              <div className="mt-2 text-sm font-medium text-purple-600">
+                New personalized content ready!
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Phase 3: Healthcare Integration */}
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow" 
+            onClick={() => onNavigate('healthcare-integration')}
+          >
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-teal-500" />
+                <CardTitle className="text-lg">Healthcare Reports</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                Generate reports for your healthcare provider
+              </CardDescription>
+              <div className="mt-2 text-sm font-medium text-teal-600">
+                HIPAA-compliant sharing
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Phase 3: Advanced Symptom Tracking */}
+          <Card 
+            className="cursor-pointer hover:shadow-md transition-shadow" 
+            onClick={() => onNavigate('advanced-symptom-tracker')}
+          >
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Target className="w-5 h-5 text-orange-500" />
+                <CardTitle className="text-lg">Advanced Tracking</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                Detailed symptom & treatment monitoring
+              </CardDescription>
+              <div className="mt-2 text-sm font-medium text-orange-600">
+                Smart medication reminders
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Existing Features */}
           <Card 
             className="cursor-pointer hover:shadow-md transition-shadow" 
             onClick={() => onNavigate('community')}
@@ -94,7 +157,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </CardContent>
           </Card>
 
-          {/* Keep existing cards... */}
           <Card 
             className="cursor-pointer hover:shadow-md transition-shadow" 
             onClick={() => onNavigate('content')}
@@ -102,12 +164,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-blue-500" />
-                <CardTitle className="text-lg">Learning</CardTitle>
+                <CardTitle className="text-lg">Learning Library</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                Explore content curated for your journey
+                Explore curated educational content
               </CardDescription>
             </CardContent>
           </Card>
@@ -119,7 +181,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2">
                 <Headphones className="w-5 h-5 text-purple-500" />
-                <CardTitle className="text-lg">Self-Worth</CardTitle>
+                <CardTitle className="text-lg">Self-Worth Toolkit</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
@@ -153,12 +215,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-green-500" />
-                <CardTitle className="text-lg">Insights</CardTitle>
+                <CardTitle className="text-lg">Wellness Insights</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <CardDescription>
-                View your wellness patterns
+                View your wellness patterns and trends
               </CardDescription>
             </CardContent>
           </Card>
@@ -170,7 +232,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2">
                 <Brain className="w-5 h-5 text-indigo-500" />
-                <CardTitle className="text-lg">Advanced Analytics</CardTitle>
+                <CardTitle className="text-lg">Predictive Analytics</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
@@ -185,7 +247,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </CardContent>
           </Card>
 
-          {/* New Personalization Card */}
           <Card 
             className="cursor-pointer hover:shadow-md transition-shadow" 
             onClick={() => onNavigate('personalization')}
@@ -244,7 +305,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Your Learning Path</CardTitle>
+              <CardTitle>Your Learning Journey</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -256,10 +317,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 ))}
               </div>
               <Button 
-                className="w-full mt-4 bg-gradient-to-r from-rose-400 to-purple-400 hover:from-rose-500 hover:to-purple-500"
-                onClick={() => onNavigate('content')}
+                className="w-full mt-4 bg-gradient-to-r from-purple-400 to-indigo-400 hover:from-purple-500 hover:to-indigo-500"
+                onClick={() => onNavigate('intelligent-content')}
               >
-                Continue Learning
+                Continue Smart Learning
               </Button>
             </CardContent>
           </Card>

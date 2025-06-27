@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,8 +7,8 @@ import { toast } from 'sonner';
 // TypeScript declarations for Web Speech API
 declare global {
   interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
+    SpeechRecognition: new () => SpeechRecognitionType;
+    webkitSpeechRecognition: new () => SpeechRecognitionType;
   }
 }
 
@@ -22,16 +21,16 @@ interface SpeechRecognitionErrorEvent extends Event {
   error: string;
 }
 
-interface SpeechRecognition extends EventTarget {
+interface SpeechRecognitionType extends EventTarget {
   continuous: boolean;
   interimResults: boolean;
   lang: string;
   start(): void;
   stop(): void;
-  onstart: ((this: SpeechRecognition, ev: Event) => any) | null;
-  onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => any) | null;
-  onerror: ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => any) | null;
-  onend: ((this: SpeechRecognition, ev: Event) => any) | null;
+  onstart: ((this: SpeechRecognitionType, ev: Event) => any) | null;
+  onresult: ((this: SpeechRecognitionType, ev: SpeechRecognitionEvent) => any) | null;
+  onerror: ((this: SpeechRecognitionType, ev: SpeechRecognitionErrorEvent) => any) | null;
+  onend: ((this: SpeechRecognitionType, ev: Event) => any) | null;
 }
 
 interface SpeechRecognitionResultList {
@@ -67,16 +66,16 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
 }) => {
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
-  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
+  const [recognition, setRecognition] = useState<SpeechRecognitionType | null>(null);
   const [transcript, setTranscript] = useState('');
 
   useEffect(() => {
     // Check if speech recognition is supported
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognitionConstructor = window.SpeechRecognition || window.webkitSpeechRecognition;
     
-    if (SpeechRecognition) {
+    if (SpeechRecognitionConstructor) {
       setIsSupported(true);
-      const recognitionInstance = new SpeechRecognition();
+      const recognitionInstance = new SpeechRecognitionConstructor();
       
       recognitionInstance.continuous = true;
       recognitionInstance.interimResults = true;
