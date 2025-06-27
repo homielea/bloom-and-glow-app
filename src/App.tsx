@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider, useApp } from './contexts/AppContext';
@@ -40,15 +41,15 @@ const AppContent: React.FC = () => {
   }
 
   if (!user) {
-    return <AuthPage />;
+    return <AuthPage onSuccess={() => {}} />;
   }
 
   if (!user.onboardingCompleted) {
-    return <OnboardingQuiz />;
+    return <OnboardingQuiz onComplete={() => {}} />;
   }
 
   if (user.onboardingCompleted && !user.persona) {
-    return <PersonaReveal />;
+    return <PersonaReveal onContinue={() => setCurrentSection('dashboard')} />;
   }
 
   const handleNavigate = (section: string) => {
