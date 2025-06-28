@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider, useApp } from './contexts/AppContext';
@@ -23,6 +22,11 @@ import PWAPrompt from './components/PWAPrompt';
 import IntelligentContentCuration from './components/IntelligentContentCuration';
 import HealthcareIntegration from './components/HealthcareIntegration';
 import AdvancedSymptomTracker from './components/AdvancedSymptomTracker';
+
+// Phase 4A imports - AI-Powered Health Assistant
+import AIHealthAssistant from './components/AIHealthAssistant';
+import PredictiveHealthModel from './components/PredictiveHealthModel';
+import SmartRecommendationEngine from './components/SmartRecommendationEngine';
 
 const queryClient = new QueryClient();
 
@@ -83,6 +87,13 @@ const AppContent: React.FC = () => {
         return <HealthcareIntegration />;
       case 'advanced-symptom-tracker':
         return <AdvancedSymptomTracker />;
+      // Phase 4A components - AI-Powered Health Assistant
+      case 'ai-assistant':
+        return <AIHealthAssistant />;
+      case 'predictive-model':
+        return <PredictiveHealthModel />;
+      case 'smart-recommendations':
+        return <SmartRecommendationEngine />;
       default:
         return <Dashboard onNavigate={handleNavigate} />;
     }
