@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import PredictiveInsightsCard from './PredictiveInsightsCard';
+import { AnalyticsEngine, PredictiveInsight } from '../utils/analyticsEngine';
 import { 
   Calendar, 
   BarChart3, 
@@ -30,6 +30,7 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const { user, getCheckInHistory } = useApp();
   const [todayCheckIn, setTodayCheckIn] = useState<any>(null);
+  const [predictiveInsights, setPredictiveInsights] = useState<PredictiveInsight[]>([]);
   const [recentStats, setRecentStats] = useState({
     avgMood: 0,
     avgEnergy: 0,
@@ -44,6 +45,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     // Find today's check-in
     const todaysCheckIn = checkIns.find(c => c.date === today);
     setTodayCheckIn(todaysCheckIn);
+
+    // Generate predictive insights from check-in data
+    const insights = AnalyticsEngine.generatePredictiveInsights(checkIns);
+    setPredictiveInsights(insights);
 
     // Calculate recent stats (last 7 days)
     const recent = checkIns.slice(0, 7);
@@ -82,6 +87,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     };
     
     return greetings[user.persona.type] || "Welcome back to your wellness dashboard!";
+  };
+
+  const handleViewPredictiveDetails = () => {
+    onNavigate('predictive-model');
   };
 
   const quickActions = [
@@ -272,7 +281,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             <Brain className="w-6 h-6 text-purple-600" />
             AI Health Insights
           </h2>
-          <PredictiveInsightsCard />
+          <PredictiveInsightsCard 
+            insights={predictiveInsights} 
+            onViewDetails={handleViewPredictiveDetails}
+          />
         </div>
 
         {/* Main Features */}
