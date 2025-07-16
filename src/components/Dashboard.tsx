@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,14 +10,38 @@ import { useApp } from '../contexts/AppContext';
 import { DailyCheckIn } from '../types';
 import { AnalyticsEngine, PredictiveInsight } from '../utils/analyticsEngine';
 import PredictiveInsightsCard from './PredictiveInsightsCard';
-import { useNavigate } from 'react-router-dom';
 
-const Dashboard: React.FC = () => {
+interface DashboardProps {
+  onNavigate: (section: string) => void;
+}
+
+// Transform database row to DailyCheckIn interface
+const transformDailyCheckIn = (dbRow: any): DailyCheckIn => ({
+  id: dbRow.id,
+  userId: dbRow.user_id,
+  date: dbRow.date,
+  mood: dbRow.mood,
+  energy: dbRow.energy,
+  libido: dbRow.libido,
+  sleep: dbRow.sleep,
+  stress: dbRow.stress,
+  bodyTemperature: dbRow.body_temperature,
+  notes: dbRow.notes,
+  moodSource: dbRow.mood_source,
+  energySource: dbRow.energy_source,
+  sleepSource: dbRow.sleep_source,
+  stressSource: dbRow.stress_source,
+  bodyTemperatureSource: dbRow.body_temperature_source,
+  trackerSleepScore: dbRow.tracker_sleep_score,
+  trackerHrv: dbRow.tracker_hrv,
+  trackerRestingHr: dbRow.tracker_resting_hr,
+});
+
+const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const [checkIns, setCheckIns] = useState<DailyCheckIn[]>([]);
   const [predictiveInsights, setPredictiveInsights] = useState<PredictiveInsight[]>([]);
   const [loading, setLoading] = useState(true);
   const { session } = useApp();
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -35,10 +60,11 @@ const Dashboard: React.FC = () => {
       if (error) throw error;
 
       if (data) {
-        setCheckIns(data);
+        const transformedData = data.map(transformDailyCheckIn);
+        setCheckIns(transformedData);
         
         // Generate predictive insights
-        const insights = AnalyticsEngine.generatePredictiveInsights(data);
+        const insights = AnalyticsEngine.generatePredictiveInsights(transformedData);
         setPredictiveInsights(insights);
       }
     } catch (error) {
@@ -69,7 +95,7 @@ const Dashboard: React.FC = () => {
   };
 
   const handleViewDetails = () => {
-    navigate('/predictive-model');
+    onNavigate('predictive-model');
   };
 
   if (loading) {
@@ -111,14 +137,14 @@ const Dashboard: React.FC = () => {
           {/* Quick Actions */}
           <div className="flex gap-2">
             <Button 
-              onClick={() => navigate('/daily-checkin')}
+              onClick={() => onNavigate('checkin')}
               className="bg-gradient-to-r from-rose-400 to-purple-400 hover:from-rose-500 hover:to-purple-500"
             >
               <Calendar className="w-4 h-4 mr-2" />
               Daily Check-in
             </Button>
             <Button 
-              onClick={() => navigate('/health-trackers')}
+              onClick={() => onNavigate('trackers')}
               variant="outline"
               className="flex items-center gap-2"
             >
@@ -250,7 +276,7 @@ const Dashboard: React.FC = () => {
                     </p>
                   </div>
                   <Button 
-                    onClick={() => navigate('/health-trackers')}
+                    onClick={() => onNavigate('trackers')}
                     className="w-full bg-blue-600 hover:bg-blue-700"
                   >
                     <Database className="w-4 h-4 mr-2" />
@@ -273,7 +299,7 @@ const Dashboard: React.FC = () => {
               <Button 
                 variant="outline" 
                 className="justify-start h-auto p-4"
-                onClick={() => navigate('/content')}
+                onClick={() => onNavigate('content')}
               >
                 <div className="text-left">
                   <div className="font-medium">Explore Content</div>
@@ -285,7 +311,7 @@ const Dashboard: React.FC = () => {
               <Button 
                 variant="outline" 
                 className="justify-start h-auto p-4"
-                onClick={() => navigate('/community')}
+                onClick={() => onNavigate('community')}
               >
                 <div className="text-left">
                   <div className="font-medium">Join Community</div>
@@ -297,7 +323,7 @@ const Dashboard: React.FC = () => {
               <Button 
                 variant="outline" 
                 className="justify-start h-auto p-4"
-                onClick={() => navigate('/wellness-insights')}
+                onClick={() => onNavigate('insights')}
               >
                 <div className="text-left">
                   <div className="font-medium">View Insights</div>

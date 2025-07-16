@@ -8,6 +8,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { TrendingUp, Heart, Activity, Moon, Thermometer, Target, AlertCircle, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '../contexts/AppContext';
+import { DailyCheckIn } from '../types';
 import { AnalyticsEngine, CorrelationResult } from '../utils/analyticsEngine';
 
 interface BiometricTrend {
@@ -25,6 +26,28 @@ interface HealthZone {
   color: string;
   description: string;
 }
+
+// Transform database row to DailyCheckIn interface
+const transformDailyCheckIn = (dbRow: any): DailyCheckIn => ({
+  id: dbRow.id,
+  userId: dbRow.user_id,
+  date: dbRow.date,
+  mood: dbRow.mood,
+  energy: dbRow.energy,
+  libido: dbRow.libido,
+  sleep: dbRow.sleep,
+  stress: dbRow.stress,
+  bodyTemperature: dbRow.body_temperature,
+  notes: dbRow.notes,
+  moodSource: dbRow.mood_source,
+  energySource: dbRow.energy_source,
+  sleepSource: dbRow.sleep_source,
+  stressSource: dbRow.stress_source,
+  bodyTemperatureSource: dbRow.body_temperature_source,
+  trackerSleepScore: dbRow.tracker_sleep_score,
+  trackerHrv: dbRow.tracker_hrv,
+  trackerRestingHr: dbRow.tracker_resting_hr,
+});
 
 const AdvancedBiometricAnalysis: React.FC = () => {
   const [biometricData, setBiometricData] = useState<BiometricTrend[]>([]);
@@ -68,8 +91,9 @@ const AdvancedBiometricAnalysis: React.FC = () => {
           const processedData = processBiometricData(trackerData);
           setBiometricData(processedData);
 
-          // Generate correlations
-          const correlationResults = AnalyticsEngine.analyzeCorrelations(checkIns);
+          // Transform check-ins and generate correlations
+          const transformedCheckIns = checkIns.map(transformDailyCheckIn);
+          const correlationResults = AnalyticsEngine.analyzeCorrelations(transformedCheckIns);
           setCorrelations(correlationResults);
 
           // Set up health zones
