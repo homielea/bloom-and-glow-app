@@ -18,12 +18,17 @@ import {
   Flag,
   Lock,
   Pin,
-  Crown
+  Crown,
+  Calendar,
+  Award,
+  Shield
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '../contexts/AppContext';
 import { Forum, ForumPost, ForumReply, SupportGroup, ExpertProfile } from '../types/community';
 import { toast } from 'sonner';
+import ExpertQASystem from './ExpertQASystem';
+import MentorshipProgram from './MentorshipProgram';
 
 const CommunityHub: React.FC = () => {
   const { session } = useApp();
@@ -39,6 +44,7 @@ const CommunityHub: React.FC = () => {
   const [newPostTitle, setNewPostTitle] = useState('');
   const [newPostContent, setNewPostContent] = useState('');
   const [newReplyContent, setNewReplyContent] = useState('');
+  const [isAnonymous, setIsAnonymous] = useState(false);
 
   useEffect(() => {
     fetchCommunityData();
@@ -132,7 +138,8 @@ const CommunityHub: React.FC = () => {
           forum_id: selectedForum.id,
           user_id: session.user.id,
           title: newPostTitle.trim(),
-          content: newPostContent.trim()
+          content: newPostContent.trim(),
+          is_anonymous: isAnonymous
         });
 
       if (error) throw error;
@@ -140,6 +147,7 @@ const CommunityHub: React.FC = () => {
       toast.success('Post created successfully!');
       setNewPostTitle('');
       setNewPostContent('');
+      setIsAnonymous(false);
       fetchForumPosts(selectedForum.id);
     } catch (error) {
       console.error('Error creating post:', error);
@@ -214,10 +222,12 @@ const CommunityHub: React.FC = () => {
         </div>
 
         <Tabs defaultValue="forums" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="forums">Forums</TabsTrigger>
             <TabsTrigger value="experts">Expert Q&A</TabsTrigger>
+            <TabsTrigger value="mentorship">Mentorship</TabsTrigger>
             <TabsTrigger value="groups">Support Groups</TabsTrigger>
+            <TabsTrigger value="challenges">Challenges</TabsTrigger>
             <TabsTrigger value="resources">Resources</TabsTrigger>
           </TabsList>
 
@@ -303,6 +313,16 @@ const CommunityHub: React.FC = () => {
                             onChange={(e) => setNewPostContent(e.target.value)}
                             rows={4}
                           />
+                          <label htmlFor="anonymous" className="inline-flex items-center space-x-2 cursor-pointer">
+                            <Input
+                              type="checkbox"
+                              id="anonymous"
+                              checked={isAnonymous}
+                              onChange={(e) => setIsAnonymous(e.target.checked)}
+                              className="h-4 w-4"
+                            />
+                            <span>Post anonymously</span>
+                          </label>
                           <Button 
                             onClick={createPost}
                             disabled={!newPostTitle.trim() || !newPostContent.trim()}
@@ -487,46 +507,11 @@ const CommunityHub: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="experts" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {experts.map((expert) => (
-                <Card key={expert.id}>
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="w-12 h-12">
-                        <AvatarFallback>
-                          <UserCheck className="w-6 h-6" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-lg">{expert.professional_title}</CardTitle>
-                        <Badge variant="default" className="bg-blue-100 text-blue-800">
-                          Verified Expert
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-gray-600 mb-3">{expert.credentials}</p>
-                    {expert.bio && (
-                      <p className="text-sm mb-3">{expert.bio}</p>
-                    )}
-                    {expert.specialization && expert.specialization.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {expert.specialization.map((spec, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {spec}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                    <div className="flex justify-between items-center text-sm text-gray-500">
-                      <span>{expert.years_experience} years experience</span>
-                      <Button size="sm">Ask Question</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <ExpertQASystem />
+          </TabsContent>
+
+          <TabsContent value="mentorship" className="space-y-4">
+            <MentorshipProgram />
           </TabsContent>
 
           <TabsContent value="groups" className="space-y-4">
@@ -558,11 +543,66 @@ const CommunityHub: React.FC = () => {
             </div>
           </TabsContent>
 
+          <TabsContent value="challenges" className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card className="border-dashed border-2 border-orange-200 bg-orange-50/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Award className="w-5 h-5 text-orange-600" />
+                    30-Day Mindfulness Challenge
+                  </CardTitle>
+                  <CardDescription>
+                    Join thousands of members in a month-long mindfulness journey
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span>Participants: 1,247</span>
+                      <span>Days remaining: 12</span>
+                    </div>
+                    <Button className="w-full">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Join Challenge
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-dashed border-2 border-green-200 bg-green-50/50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Heart className="w-5 h-5 text-green-600" />
+                    Heart Health Month
+                  </CardTitle>
+                  <CardDescription>
+                    Focus on cardiovascular wellness with daily activities and tracking
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span>Participants: 892</span>
+                      <span>Starting Feb 1st</span>
+                    </div>
+                    <Button className="w-full" variant="outline">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Register Interest
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
           <TabsContent value="resources" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Community Guidelines</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="w-5 h-5" />
+                    Community Guidelines
+                  </CardTitle>
                   <CardDescription>
                     Learn about our community standards and how to create a supportive environment
                   </CardDescription>

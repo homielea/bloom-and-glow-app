@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,7 +24,11 @@ import RealTimeHealthMonitor from './RealTimeHealthMonitor';
 import AdvancedBiometricAnalysis from './AdvancedBiometricAnalysis';
 import MultiDeviceSyncDashboard from './MultiDeviceSyncDashboard';
 
-const HealthTrackers: React.FC = () => {
+interface HealthTrackersProps {
+  onNavigate: (section: string) => void;
+}
+
+const HealthTrackers: React.FC<HealthTrackersProps> = ({ onNavigate }) => {
   const [connections, setConnections] = useState<HealthTrackerConnection[]>([]);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState<string | null>(null);
@@ -70,6 +73,15 @@ const HealthTrackers: React.FC = () => {
   };
 
   const handleConnect = async (provider: string) => {
+    if (!session?.user?.id) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to connect health trackers.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setConnecting(provider);
     
     try {
@@ -80,6 +92,7 @@ const HealthTrackers: React.FC = () => {
       const { error } = await supabase
         .from('health_tracker_connections')
         .insert({
+          user_id: session.user.id,
           provider,
           device_name: `${provider} Device`,
           access_token: 'demo_token',
@@ -319,7 +332,7 @@ const HealthTrackers: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="analytics">
-            <AdvancedBiometricAnalysis />
+            <AdvancedBiometricAnalysis onNavigate={onNavigate} />
           </TabsContent>
 
           <TabsContent value="sync">
