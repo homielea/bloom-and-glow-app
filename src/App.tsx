@@ -74,7 +74,7 @@ const AppContent: React.FC = () => {
       case 'insights':
         return <WellnessInsights />;
       case 'trackers':
-        return <HealthTrackers />;
+        return <HealthTrackers onNavigate={handleNavigate} />;
       case 'advanced-analytics':
         return <AdvancedAnalytics />;
       case 'personalization':

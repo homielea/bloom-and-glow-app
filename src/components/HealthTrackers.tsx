@@ -1,196 +1,110 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Smartphone, 
-  Watch, 
-  Activity, 
-  Heart, 
-  Moon, 
-  CheckCircle, 
-  AlertCircle, 
-  Plus,
-  Settings,
-  Zap,
-  TrendingUp
-} from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Activity, Smartphone, Watch, Heart, Zap, Moon, TrendingUp, AlertCircle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
-import { HealthTrackerConnection } from '../types';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
+import GoogleFitConnect from './GoogleFitConnect';
+import AppleHealthConnect from './AppleHealthConnect';
 import RealTimeHealthMonitor from './RealTimeHealthMonitor';
-import AdvancedBiometricAnalysis from './AdvancedBiometricAnalysis';
 import MultiDeviceSyncDashboard from './MultiDeviceSyncDashboard';
+import AdvancedBiometricAnalysis from './AdvancedBiometricAnalysis';
 
 interface HealthTrackersProps {
   onNavigate: (section: string) => void;
 }
 
+// Mock data for demonstration
+const mockHealthData = [
+  { date: '2024-01-15', heartRate: 72, steps: 8500, sleep: 7.5 },
+  { date: '2024-01-16', heartRate: 75, steps: 9200, sleep: 6.8 },
+  { date: '2024-01-17', heartRate: 73, steps: 7800, sleep: 8.1 },
+  { date: '2024-01-18', heartRate: 71, steps: 10200, sleep: 7.2 },
+  { date: '2024-01-19', heartRate: 74, steps: 8900, sleep: 7.8 },
+];
+
 const HealthTrackers: React.FC<HealthTrackersProps> = ({ onNavigate }) => {
-  const [connections, setConnections] = useState<HealthTrackerConnection[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [connecting, setConnecting] = useState<string | null>(null);
-  const { session } = useApp();
+  const { user, session, connectHealthTracker, getHealthTrackerConnections, getLatestTrackerData, syncHealthData } = useApp();
+  const [connections, setConnections] = useState<any[]>([]);
+  const [latestData, setLatestData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
-    if (session?.user?.id) {
+    if (user) {
       loadConnections();
     }
-  }, [session?.user?.id]);
+  }, [user]);
 
   const loadConnections = async () => {
     try {
-      const { data, error } = await supabase
-        .from('health_tracker_connections')
-        .select('*')
-        .order('connected_at', { ascending: false });
-
-      if (error) throw error;
+      const userConnections = await getHealthTrackerConnections();
+      setConnections(userConnections);
       
-      if (data) {
-        setConnections(data.map(conn => ({
-          id: conn.id,
-          provider: conn.provider,
-          device_name: conn.device_name || '',
-          connected_at: conn.connected_at,
-          last_sync_at: conn.last_sync_at,
-          sync_status: conn.sync_status as 'active' | 'error' | 'disconnected',
-          sync_error_message: conn.sync_error_message
-        })));
+      // Load latest data if connections exist
+      if (userConnections.length > 0) {
+        const data = await getLatestTrackerData('sleep');
+        setLatestData(data);
       }
     } catch (error) {
       console.error('Error loading connections:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load health tracker connections.",
-        variant: "destructive"
-      });
+      toast.error('Failed to load health tracker connections');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleConnect = async (provider: string) => {
-    if (!session?.user?.id) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to connect health trackers.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setConnecting(provider);
-    
+  const handleConnect = async (provider: string, tokenData: any) => {
     try {
-      // This would normally redirect to OAuth flow
-      // For demo purposes, we'll simulate a connection
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const connection = await connectHealthTracker(provider, tokenData);
+      setConnections(prev => [...prev, connection]);
+      toast.success(`Successfully connected to ${provider}`);
       
-      const { error } = await supabase
-        .from('health_tracker_connections')
-        .insert({
-          user_id: session.user.id,
-          provider,
-          device_name: `${provider} Device`,
-          access_token: 'demo_token',
-          sync_status: 'active'
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Connected!",
-        description: `Successfully connected to ${provider}.`,
-      });
-
-      loadConnections();
+      // Trigger initial sync
+      await handleSync(connection.id);
     } catch (error) {
-      console.error('Error connecting:', error);
-      toast({
-        title: "Connection Failed",
-        description: `Failed to connect to ${provider}. Please try again.`,
-        variant: "destructive"
-      });
-    } finally {
-      setConnecting(null);
+      console.error(`Error connecting to ${provider}:`, error);
+      toast.error(`Failed to connect to ${provider}`);
     }
   };
 
-  const handleDisconnect = async (connectionId: string) => {
+  const handleSync = async (connectionId: string) => {
     try {
-      const { error } = await supabase
-        .from('health_tracker_connections')
-        .delete()
-        .eq('id', connectionId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Disconnected",
-        description: "Health tracker has been disconnected.",
-      });
-
-      loadConnections();
+      setIsSyncing(true);
+      await syncHealthData(connectionId);
+      await loadConnections(); // Refresh data
     } catch (error) {
-      console.error('Error disconnecting:', error);
-      toast({
-        title: "Error",
-        description: "Failed to disconnect. Please try again.",
-        variant: "destructive"
-      });
+      console.error('Error syncing data:', error);
+      toast.error('Failed to sync health data');
+    } finally {
+      setIsSyncing(false);
     }
   };
 
-  const providers = [
-    {
-      name: 'Fitbit',
-      icon: Activity,
-      description: 'Connect your Fitbit device for comprehensive health tracking',
-      features: ['Steps', 'Heart Rate', 'Sleep', 'Calories']
-    },
-    {
-      name: 'Apple Health',
-      icon: Heart,
-      description: 'Sync data from Apple Health and connected devices',
-      features: ['Heart Rate', 'Sleep', 'Activity', 'Health Records']
-    },
-    {
-      name: 'Google Fit',
-      icon: Smartphone,
-      description: 'Import activity and wellness data from Google Fit',
-      features: ['Steps', 'Activities', 'Weight', 'Heart Points']
-    },
-    {
-      name: 'Oura Ring',
-      icon: Moon,
-      description: 'Advanced sleep and recovery tracking with Oura',
-      features: ['Sleep Quality', 'HRV', 'Temperature', 'Recovery']
-    }
-  ];
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
+  const getConnectionStatus = (connection: any) => {
+    switch (connection.sync_status) {
       case 'active':
-        return <Badge className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Active</Badge>;
+        return <Badge variant="secondary" className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />Active</Badge>;
       case 'error':
-        return <Badge variant="destructive"><AlertCircle className="w-3 h-3 mr-1" />Error</Badge>;
+        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Error</Badge>;
       case 'disconnected':
-        return <Badge variant="secondary">Disconnected</Badge>;
+        return <Badge variant="outline"><AlertCircle className="w-3 h-3 mr-1" />Disconnected</Badge>;
       default:
         return <Badge variant="outline">Unknown</Badge>;
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-rose-50 via-purple-50 to-indigo-50 p-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center py-12">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p>Loading health trackers...</p>
+            <p>Loading health tracking features...</p>
           </div>
         </div>
       </div>
@@ -200,193 +114,151 @@ const HealthTrackers: React.FC<HealthTrackersProps> = ({ onNavigate }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-purple-50 to-indigo-50 p-4">
       <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Health Trackers</h1>
+            <h1 className="text-3xl font-bold mb-2">Health Tracking</h1>
             <p className="text-muted-foreground">
-              Connect your devices for comprehensive health monitoring and insights.
+              Connect your devices and track your health metrics in real-time
             </p>
           </div>
+          <Button 
+            onClick={() => onNavigate('dashboard')}
+            variant="outline"
+          >
+            ← Back to Dashboard
+          </Button>
         </div>
 
-        <Tabs defaultValue="connect" className="space-y-6">
+        <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="connect">Connect Devices</TabsTrigger>
             <TabsTrigger value="realtime">Real-time Monitor</TabsTrigger>
-            <TabsTrigger value="analytics">Biometric Analysis</TabsTrigger>
             <TabsTrigger value="sync">Multi-Device Sync</TabsTrigger>
-            <TabsTrigger value="insights">Advanced Insights</TabsTrigger>
+            <TabsTrigger value="analysis">Advanced Analysis</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="connect" className="space-y-6">
-            {/* Connected Devices */}
-            {connections.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Connected Devices</CardTitle>
-                  <CardDescription>Your currently connected health trackers</CardDescription>
-                </CardHeader>
-                <CardContent>
+          <TabsContent value="overview" className="space-y-6">
+            {/* Current Connections */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Connected Devices</CardTitle>
+                <CardDescription>Your currently connected health tracking devices</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {connections.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Activity className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                    <p className="text-muted-foreground">No devices connected yet</p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Connect your fitness tracker or smartwatch to start tracking your health metrics
+                    </p>
+                  </div>
+                ) : (
                   <div className="space-y-4">
                     {connections.map((connection) => (
                       <div key={connection.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-primary/10 rounded-lg">
-                            <Activity className="w-5 h-5 text-primary" />
+                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <Activity className="w-5 h-5 text-blue-600" />
                           </div>
                           <div>
-                            <div className="font-medium">{connection.device_name}</div>
-                            <div className="text-sm text-muted-foreground">
-                              Last sync: {connection.last_sync_at ? new Date(connection.last_sync_at).toLocaleDateString() : 'Never'}
-                            </div>
+                            <h3 className="font-medium">{connection.device_name}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              Connected {new Date(connection.connected_at).toLocaleDateString()}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          {getStatusBadge(connection.sync_status)}
+                          {getConnectionStatus(connection)}
                           <Button
-                            variant="outline"
+                            onClick={() => handleSync(connection.id)}
+                            disabled={isSyncing}
                             size="sm"
-                            onClick={() => handleDisconnect(connection.id)}
+                            variant="outline"
                           >
-                            Disconnect
+                            {isSyncing ? (
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <RefreshCw className="w-4 h-4" />
+                            )}
+                            Sync
                           </Button>
                         </div>
                       </div>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Available Providers */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Available Integrations</CardTitle>
-                <CardDescription>Connect new health tracking devices and apps</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-2">
-                  {providers.map((provider) => {
-                    const IconComponent = provider.icon;
-                    const isConnected = connections.some(c => c.provider === provider.name.toLowerCase());
-                    const isConnecting = connecting === provider.name.toLowerCase();
-                    
-                    return (
-                      <Card key={provider.name} className={isConnected ? 'border-green-200 bg-green-50/50' : ''}>
-                        <CardContent className="pt-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 bg-primary/10 rounded-lg">
-                                <IconComponent className="w-5 h-5 text-primary" />
-                              </div>
-                              <div>
-                                <h3 className="font-semibold">{provider.name}</h3>
-                                <p className="text-sm text-muted-foreground">{provider.description}</p>
-                              </div>
-                            </div>
-                            {isConnected && <CheckCircle className="w-5 h-5 text-green-600" />}
-                          </div>
-                          
-                          <div className="flex flex-wrap gap-1 mb-4">
-                            {provider.features.map((feature) => (
-                              <Badge key={feature} variant="secondary" className="text-xs">
-                                {feature}
-                              </Badge>
-                            ))}
-                          </div>
-                          
-                          <Button
-                            onClick={() => handleConnect(provider.name.toLowerCase())}
-                            disabled={isConnected || isConnecting}
-                            className="w-full"
-                            variant={isConnected ? "secondary" : "default"}
-                          >
-                            {isConnecting ? (
-                              <>
-                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                                Connecting...
-                              </>
-                            ) : isConnected ? (
-                              <>
-                                <CheckCircle className="w-4 h-4 mr-2" />
-                                Connected
-                              </>
-                            ) : (
-                              <>
-                                <Plus className="w-4 h-4 mr-2" />
-                                Connect
-                              </>
-                            )}
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
+                )}
               </CardContent>
             </Card>
+
+            {/* Health Metrics Overview */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Heart Rate</CardTitle>
+                  <Heart className="h-4 w-4 text-red-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {latestData?.value || mockHealthData[mockHealthData.length - 1]?.heartRate || '--'} BPM
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Resting heart rate
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Sleep Score</CardTitle>
+                  <Moon className="h-4 w-4 text-blue-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {mockHealthData[mockHealthData.length - 1]?.sleep || '--'} hrs
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Last night's sleep
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Activity</CardTitle>
+                  <Zap className="h-4 w-4 text-orange-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {mockHealthData[mockHealthData.length - 1]?.steps || '--'}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Steps today
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
-          <TabsContent value="realtime">
+          <TabsContent value="connect" className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <GoogleFitConnect onConnect={handleConnect} />
+              <AppleHealthConnect onConnect={handleConnect} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="realtime" className="space-y-6">
             <RealTimeHealthMonitor />
           </TabsContent>
 
-          <TabsContent value="analytics">
-            <AdvancedBiometricAnalysis onNavigate={onNavigate} />
-          </TabsContent>
-
-          <TabsContent value="sync">
+          <TabsContent value="sync" className="space-y-6">
             <MultiDeviceSyncDashboard />
           </TabsContent>
 
-          <TabsContent value="insights" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5" />
-                  Advanced Health Insights
-                </CardTitle>
-                <CardDescription>
-                  AI-powered analysis of your health patterns and personalized recommendations
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-3">
-                  <Card className="border-dashed border-2 border-purple-200 bg-purple-50/50">
-                    <CardContent className="pt-6 text-center">
-                      <Zap className="w-12 h-12 mx-auto text-purple-600 mb-3" />
-                      <h3 className="font-semibold mb-2">Energy Optimization</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        AI recommendations to optimize your energy levels throughout the day
-                      </p>
-                      <Badge variant="secondary">Coming Soon</Badge>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-dashed border-2 border-blue-200 bg-blue-50/50">
-                    <CardContent className="pt-6 text-center">
-                      <Moon className="w-12 h-12 mx-auto text-blue-600 mb-3" />
-                      <h3 className="font-semibold mb-2">Sleep Coaching</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Personalized sleep improvement strategies based on your patterns
-                      </p>
-                      <Badge variant="secondary">Coming Soon</Badge>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-dashed border-2 border-green-200 bg-green-50/50">
-                    <CardContent className="pt-6 text-center">
-                      <Heart className="w-12 h-12 mx-auto text-green-600 mb-3" />
-                      <h3 className="font-semibold mb-2">Stress Management</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Proactive stress detection and management recommendations
-                      </p>
-                      <Badge variant="secondary">Coming Soon</Badge>
-                    </CardContent>
-                  </Card>
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="analysis" className="space-y-6">
+            <AdvancedBiometricAnalysis />
           </TabsContent>
         </Tabs>
       </div>

@@ -65,15 +65,18 @@ export const useSessionManager = () => {
       (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
         
-        setSessionState({
+        // Update session state synchronously
+        setSessionState(prevState => ({
           session,
           loading: false,
-          isExpired: event === 'TOKEN_REFRESHED' ? false : sessionState.isExpired
-        });
+          isExpired: event === 'SIGNED_OUT' && !session ? false : prevState.isExpired
+        }));
 
+        // Handle session expiry checks
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          checkSessionExpiry(session);
-          setSessionState(prev => ({ ...prev, isExpired: false }));
+          setTimeout(() => {
+            checkSessionExpiry(session);
+          }, 0);
         }
 
         if (event === 'SIGNED_OUT') {
