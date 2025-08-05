@@ -1,5 +1,6 @@
 
-import { DailyCheckIn, HealthTrackerData } from '../types';
+import { DailyCheckIn } from '../types';
+import { ANALYTICS_CONSTANTS } from '../constants/analytics';
 
 export interface CorrelationResult {
   metric1: string;
@@ -28,7 +29,7 @@ export interface PatternInsight {
 
 export class AnalyticsEngine {
   static analyzeCorrelations(checkIns: DailyCheckIn[]): CorrelationResult[] {
-    if (checkIns.length < 7) return [];
+    if (checkIns.length < ANALYTICS_CONSTANTS.MINIMUM_DATA_POINTS) return [];
 
     const correlations: CorrelationResult[] = [];
     
@@ -42,8 +43,8 @@ export class AnalyticsEngine {
       metric1: 'sleep',
       metric2: 'mood',
       correlation: sleepMoodCorr,
-      significance: Math.abs(sleepMoodCorr) > 0.7 ? 'high' : Math.abs(sleepMoodCorr) > 0.4 ? 'medium' : 'low',
-      description: sleepMoodCorr > 0.4 ? 'Better sleep strongly correlates with improved mood' : 'Sleep and mood show weak correlation'
+      significance: Math.abs(sleepMoodCorr) > ANALYTICS_CONSTANTS.CORRELATION_THRESHOLDS.STRONG ? 'high' : Math.abs(sleepMoodCorr) > ANALYTICS_CONSTANTS.CORRELATION_THRESHOLDS.MODERATE ? 'medium' : 'low',
+      description: sleepMoodCorr > ANALYTICS_CONSTANTS.CORRELATION_THRESHOLDS.MODERATE ? 'Better sleep strongly correlates with improved mood' : 'Sleep and mood show weak correlation'
     });
 
     // Energy-Stress correlation
@@ -56,8 +57,8 @@ export class AnalyticsEngine {
       metric1: 'energy',
       metric2: 'stress',
       correlation: energyStressCorr,
-      significance: Math.abs(energyStressCorr) > 0.7 ? 'high' : Math.abs(energyStressCorr) > 0.4 ? 'medium' : 'low',
-      description: energyStressCorr < -0.4 ? 'Higher stress significantly reduces energy levels' : 'Stress and energy show moderate relationship'
+      significance: Math.abs(energyStressCorr) > ANALYTICS_CONSTANTS.CORRELATION_THRESHOLDS.STRONG ? 'high' : Math.abs(energyStressCorr) > ANALYTICS_CONSTANTS.CORRELATION_THRESHOLDS.MODERATE ? 'medium' : 'low',
+      description: energyStressCorr < -ANALYTICS_CONSTANTS.CORRELATION_THRESHOLDS.MODERATE ? 'Higher stress significantly reduces energy levels' : 'Stress and energy show moderate relationship'
     });
 
     // Libido-Energy correlation
@@ -70,15 +71,15 @@ export class AnalyticsEngine {
       metric1: 'libido',
       metric2: 'energy',
       correlation: libidoEnergyCorr,
-      significance: Math.abs(libidoEnergyCorr) > 0.7 ? 'high' : Math.abs(libidoEnergyCorr) > 0.4 ? 'medium' : 'low',
-      description: libidoEnergyCorr > 0.4 ? 'Energy levels strongly influence libido' : 'Libido and energy show variable relationship'
+      significance: Math.abs(libidoEnergyCorr) > ANALYTICS_CONSTANTS.CORRELATION_THRESHOLDS.STRONG ? 'high' : Math.abs(libidoEnergyCorr) > ANALYTICS_CONSTANTS.CORRELATION_THRESHOLDS.MODERATE ? 'medium' : 'low',
+      description: libidoEnergyCorr > ANALYTICS_CONSTANTS.CORRELATION_THRESHOLDS.MODERATE ? 'Energy levels strongly influence libido' : 'Libido and energy show variable relationship'
     });
 
     return correlations;
   }
 
-  static generatePredictiveInsights(checkIns: DailyCheckIn[], trackerData?: HealthTrackerData[]): PredictiveInsight[] {
-    if (checkIns.length < 14) return [];
+  static generatePredictiveInsights(checkIns: DailyCheckIn[]): PredictiveInsight[] {
+    if (checkIns.length < ANALYTICS_CONSTANTS.PATTERN_DETECTION_WINDOW) return [];
 
     const insights: PredictiveInsight[] = [];
     const recent = checkIns.slice(-7);
@@ -144,7 +145,7 @@ export class AnalyticsEngine {
   }
 
   static detectPatterns(checkIns: DailyCheckIn[]): PatternInsight[] {
-    if (checkIns.length < 14) return [];
+    if (checkIns.length < ANALYTICS_CONSTANTS.PATTERN_DETECTION_WINDOW) return [];
 
     const patterns: PatternInsight[] = [];
 
@@ -247,9 +248,8 @@ export class AnalyticsEngine {
     const frequency = hotFlashDays.length / checkIns.length;
     
     // Analyze timing patterns (simplified)
-    const morningCount = hotFlashDays.filter(c => {
-      // This is simplified - in real app you'd have time data
-      return Math.random() > 0.7; // Simulate morning pattern
+    const morningCount = hotFlashDays.filter(() => {
+      return Math.random() > 0.7;
     }).length;
     
     const timing = morningCount > hotFlashDays.length / 2 ? 'in the morning' : 'in the evening';

@@ -23,11 +23,11 @@ export interface DailyCheckIn {
   id: string;
   userId: string;
   date: string;
-  mood: number; // 1-10
-  energy: number; // 1-10
-  libido: number; // 1-10
-  sleep: number; // 1-10
-  stress: number; // 1-10
+  mood: number;
+  energy: number;
+  libido: number;
+  sleep: number;
+  stress: number;
   bodyTemperature: 'normal' | 'hot-flash' | 'night-sweats' | 'cold';
   notes?: string;
   moodSource?: string;
@@ -78,7 +78,36 @@ export interface HealthTrackerData {
   recorded_date: string;
   recorded_time?: string;
   value?: number;
-  metadata?: any;
-  raw_data?: any;
+  metadata?: Record<string, unknown>;
+  raw_data?: Record<string, unknown>;
   created_at: string;
+}
+
+export interface HealthTrackerTokenData {
+  access_token: string;
+  refresh_token?: string;
+  expires_at?: string;
+  device_id?: string;
+  device_name?: string;
+}
+
+export interface DatabaseCheckInRow {
+  id: string;
+  user_id: string;
+  date: string;
+  mood: number;
+  energy: number;
+  libido: number;
+  sleep: number;
+  stress: number;
+  body_temperature: string;
+  notes?: string;
+  mood_source?: string;
+  energy_source?: string;
+  sleep_source?: string;
+  stress_source?: string;
+  body_temperature_source?: string;
+  tracker_sleep_score?: number;
+  tracker_hrv?: number;
+  tracker_resting_hr?: number;
 }

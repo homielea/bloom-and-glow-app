@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, Heart, Moon, Zap, Brain, Calendar, ChevronRight, Activity, Database } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,31 +9,31 @@ import { useApp } from '../contexts/AppContext';
 import { DailyCheckIn } from '../types';
 import { AnalyticsEngine, PredictiveInsight } from '../utils/analyticsEngine';
 import PredictiveInsightsCard from './PredictiveInsightsCard';
+import { HEALTH_CONSTANTS } from '../constants/health';
 
 interface DashboardProps {
   onNavigate: (section: string) => void;
 }
 
-// Transform database row to DailyCheckIn interface
-const transformDailyCheckIn = (dbRow: any): DailyCheckIn => ({
-  id: dbRow.id,
-  userId: dbRow.user_id,
-  date: dbRow.date,
-  mood: dbRow.mood,
-  energy: dbRow.energy,
-  libido: dbRow.libido,
-  sleep: dbRow.sleep,
-  stress: dbRow.stress,
-  bodyTemperature: dbRow.body_temperature,
-  notes: dbRow.notes,
-  moodSource: dbRow.mood_source,
-  energySource: dbRow.energy_source,
-  sleepSource: dbRow.sleep_source,
-  stressSource: dbRow.stress_source,
-  bodyTemperatureSource: dbRow.body_temperature_source,
-  trackerSleepScore: dbRow.tracker_sleep_score,
-  trackerHrv: dbRow.tracker_hrv,
-  trackerRestingHr: dbRow.tracker_resting_hr,
+const transformDailyCheckIn = (dbRow: Record<string, unknown>): DailyCheckIn => ({
+  id: dbRow.id as string,
+  userId: dbRow.user_id as string,
+  date: dbRow.date as string,
+  mood: dbRow.mood as number,
+  energy: dbRow.energy as number,
+  libido: dbRow.libido as number,
+  sleep: dbRow.sleep as number,
+  stress: dbRow.stress as number,
+  bodyTemperature: dbRow.body_temperature as 'normal' | 'hot-flash' | 'night-sweats' | 'cold',
+  notes: dbRow.notes as string | undefined,
+  moodSource: dbRow.mood_source as string | undefined,
+  energySource: dbRow.energy_source as string | undefined,
+  sleepSource: dbRow.sleep_source as string | undefined,
+  stressSource: dbRow.stress_source as string | undefined,
+  bodyTemperatureSource: dbRow.body_temperature_source as string | undefined,
+  trackerSleepScore: dbRow.tracker_sleep_score as number | undefined,
+  trackerHrv: dbRow.tracker_hrv as number | undefined,
+  trackerRestingHr: dbRow.tracker_resting_hr as number | undefined,
 });
 
 const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
@@ -63,9 +62,34 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         const transformedData = data.map(transformDailyCheckIn);
         setCheckIns(transformedData);
         
-        // Generate predictive insights
         const insights = AnalyticsEngine.generatePredictiveInsights(transformedData);
         setPredictiveInsights(insights);
+        
+        if (checkIns.length >= 7) {
+          const sleepScore = checkIns.reduce((sum, c) => sum + c.sleep, 0) / checkIns.length;
+          
+          if (sleepScore < HEALTH_CONSTANTS.SLEEP_SCORE_THRESHOLDS.POOR) {
+            setPredictiveInsights(prev => [...prev, {
+              id: 'sleep-mood-correlation',
+              title: 'Sleep Quality Alert',
+              description: 'Your sleep quality is poor. This may be affecting your mood and energy levels.',
+              confidence: 0.85,
+              actionable: true,
+              suggestedAction: 'Try going to bed 30 minutes earlier tonight.',
+              category: 'sleep'
+            } as PredictiveInsight]);
+          } else if (sleepScore < HEALTH_CONSTANTS.SLEEP_SCORE_THRESHOLDS.FAIR) {
+            setPredictiveInsights(prev => [...prev, {
+              id: 'sleep-improvement',
+              title: 'Sleep Improvement Opportunity',
+              description: 'Your sleep quality is fair. Small improvements could boost your energy levels.',
+              confidence: 0.75,
+              actionable: true,
+              suggestedAction: 'Consider a relaxing bedtime routine.',
+              category: 'sleep'
+            } as PredictiveInsight]);
+          }
+        }
       }
     } catch (error) {
       console.error('Error loading check-ins:', error);
@@ -308,7 +332,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 <ChevronRight className="w-4 h-4 ml-auto" />
               </Button>
               
-              <Button 
+              <Button
                 variant="outline" 
                 className="justify-start h-auto p-4"
                 onClick={() => onNavigate('community')}
@@ -319,8 +343,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 </div>
                 <ChevronRight className="w-4 h-4 ml-auto" />
               </Button>
-
-              <Button 
+              
+              <Button
                 variant="outline" 
                 className="justify-start h-auto p-4"
                 onClick={() => onNavigate('insights')}
