@@ -101,7 +101,6 @@ const AdvancedBiometricAnalysis: React.FC = () => {
         }
       }
     } catch (error) {
-      console.error('Error loading biometric analysis:', error);
     } finally {
       setLoading(false);
     }

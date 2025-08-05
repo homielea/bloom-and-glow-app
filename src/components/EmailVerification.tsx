@@ -43,7 +43,6 @@ const EmailVerification: React.FC<EmailVerificationProps> = ({ email, onVerified
         });
       }
     } catch (error) {
-      console.error('Resend verification error:', error);
       toast({
         title: "Error",
         description: "Failed to resend verification email. Please try again.",

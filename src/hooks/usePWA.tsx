@@ -119,7 +119,6 @@ export const useOfflineStorage = () => {
         timestamp: Date.now()
       }));
     } catch (error) {
-      console.error('Failed to store offline data:', error);
     }
   };
 
@@ -128,7 +127,6 @@ export const useOfflineStorage = () => {
       const stored = localStorage.getItem(`offline_${key}`);
       return stored ? JSON.parse(stored) : null;
     } catch (error) {
-      console.error('Failed to retrieve offline data:', error);
       return null;
     }
   };
@@ -137,7 +135,6 @@ export const useOfflineStorage = () => {
     try {
       localStorage.removeItem(`offline_${key}`);
     } catch (error) {
-      console.error('Failed to clear offline data:', error);
     }
   };
 

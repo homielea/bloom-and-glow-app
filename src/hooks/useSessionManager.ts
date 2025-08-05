@@ -63,7 +63,6 @@ export const useSessionManager = () => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
         
         // Update session state synchronously
         setSessionState(prevState => ({
@@ -118,7 +117,6 @@ export const useSessionManager = () => {
       
       return data.session;
     } catch (error) {
-      console.error('Session refresh error:', error);
       toast({
         title: "Failed to refresh session",
         description: "Please log in again.",

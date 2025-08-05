@@ -43,7 +43,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setCheckInHistory(transformedData);
       }
     } catch (error) {
-      console.error('Error loading check-in history:', error);
     }
   };
 
@@ -105,7 +104,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       await loadCheckInHistory(session.user.id);
     } catch (error) {
-      console.error('Error saving check-in:', error);
       throw error;
     }
   };
@@ -144,7 +142,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         sync_error_message: data.sync_error_message
       };
     } catch (error) {
-      console.error('Error connecting health tracker:', error);
       throw error;
     }
   };
@@ -170,7 +167,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         sync_error_message: conn.sync_error_message
       }));
     } catch (error) {
-      console.error('Error fetching health tracker connections:', error);
       return [];
     }
   };
@@ -210,7 +206,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         created_at: data.created_at
       } : null;
     } catch (error) {
-      console.error('Error fetching latest tracker data:', error);
       return null;
     }
   };
@@ -224,7 +219,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (error) throw error;
     } catch (error) {
-      console.error('Error syncing health data:', error);
       throw error;
     }
   };

@@ -43,7 +43,6 @@ const PasswordReset: React.FC<PasswordResetProps> = ({ onBack }) => {
         });
       }
     } catch (error) {
-      console.error('Password reset error:', error);
       toast({
         title: "Error",
         description: "Failed to send reset email. Please try again.",

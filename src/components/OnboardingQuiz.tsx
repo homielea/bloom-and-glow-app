@@ -53,7 +53,6 @@ const OnboardingQuiz: React.FC<{ onComplete: () => void }> = ({ onComplete }) =>
           .insert(quizAnswersToSave);
 
         if (answersError) {
-          console.error('Error saving quiz answers:', answersError);
           toast({
             title: "Error",
             description: "Failed to save quiz answers. Please try again.",
@@ -80,7 +79,6 @@ const OnboardingQuiz: React.FC<{ onComplete: () => void }> = ({ onComplete }) =>
           .eq('id', session.user.id);
 
         if (profileError) {
-          console.error('Error updating profile:', profileError);
           toast({
             title: "Error",
             description: "Failed to save your persona. Please try again.",
@@ -123,7 +121,6 @@ const OnboardingQuiz: React.FC<{ onComplete: () => void }> = ({ onComplete }) =>
         
         onComplete();
       } catch (error) {
-        console.error('Error completing quiz:', error);
         toast({
           title: "Error",
           description: "An unexpected error occurred. Please try again.",

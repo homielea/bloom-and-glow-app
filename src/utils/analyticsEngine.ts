@@ -11,12 +11,18 @@ export interface CorrelationResult {
 }
 
 export interface PredictiveInsight {
-  type: 'hot-flash' | 'energy-dip' | 'sleep-quality' | 'stress-spike';
-  probability: number;
-  date: string;
-  confidence: 'high' | 'medium' | 'low';
-  reasoning: string;
-  recommendations: string[];
+  id?: string;
+  type?: 'hot-flash' | 'energy-dip' | 'sleep-quality' | 'stress-spike';
+  probability?: number;
+  date?: string;
+  confidence?: 'high' | 'medium' | 'low' | number;
+  reasoning?: string;
+  recommendations?: string[];
+  title?: string;
+  description?: string;
+  actionable?: boolean;
+  suggestedAction?: string;
+  category?: string;
 }
 
 export interface PatternInsight {

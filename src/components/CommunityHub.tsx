@@ -82,7 +82,6 @@ const CommunityHub: React.FC = () => {
       setExperts((expertsData || []) as ExpertProfile[]);
 
     } catch (error) {
-      console.error('Error fetching community data:', error);
       toast.error('Failed to load community data');
     } finally {
       setLoading(false);
@@ -104,7 +103,6 @@ const CommunityHub: React.FC = () => {
       if (error) throw error;
       setForumPosts((data || []) as ForumPost[]);
     } catch (error) {
-      console.error('Error fetching forum posts:', error);
       toast.error('Failed to load forum posts');
     }
   };
@@ -123,7 +121,6 @@ const CommunityHub: React.FC = () => {
       if (error) throw error;
       setPostReplies((data || []) as ForumReply[]);
     } catch (error) {
-      console.error('Error fetching post replies:', error);
       toast.error('Failed to load replies');
     }
   };
@@ -150,7 +147,6 @@ const CommunityHub: React.FC = () => {
       setIsAnonymous(false);
       fetchForumPosts(selectedForum.id);
     } catch (error) {
-      console.error('Error creating post:', error);
       toast.error('Failed to create post');
     }
   };
@@ -173,7 +169,6 @@ const CommunityHub: React.FC = () => {
       setNewReplyContent('');
       fetchPostReplies(selectedPost.id);
     } catch (error) {
-      console.error('Error creating reply:', error);
       toast.error('Failed to post reply');
     }
   };

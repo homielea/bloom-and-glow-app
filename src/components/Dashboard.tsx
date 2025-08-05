@@ -77,7 +77,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               actionable: true,
               suggestedAction: 'Try going to bed 30 minutes earlier tonight.',
               category: 'sleep'
-            } as PredictiveInsight]);
+            }]);
           } else if (sleepScore < HEALTH_CONSTANTS.SLEEP_SCORE_THRESHOLDS.FAIR) {
             setPredictiveInsights(prev => [...prev, {
               id: 'sleep-improvement',
@@ -87,12 +87,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               actionable: true,
               suggestedAction: 'Consider a relaxing bedtime routine.',
               category: 'sleep'
-            } as PredictiveInsight]);
+            }]);
           }
         }
       }
     } catch (error) {
-      console.error('Error loading check-ins:', error);
     } finally {
       setLoading(false);
     }
@@ -327,7 +326,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               >
                 <div className="text-left">
                   <div className="font-medium">Explore Content</div>
-                  <div className="text-sm text-muted-foreground">Educational resources & guidance</div>
+                  <div className="text-sm text-muted-foreground">Educational resources and guidance</div>
                 </div>
                 <ChevronRight className="w-4 h-4 ml-auto" />
               </Button>

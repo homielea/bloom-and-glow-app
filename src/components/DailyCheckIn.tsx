@@ -20,7 +20,7 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
   const [bodyTemperature, setBodyTemperature] = useState<'normal' | 'hot-flash' | 'night-sweats' | 'cold'>('normal');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
-  const [trackerData, setTrackerData] = useState<any>({});
+  const [trackerData, setTrackerData] = useState<Record<string, unknown>>({});
   const [dataSource, setDataSource] = useState({
     mood: 'manual',
     energy: 'manual',
@@ -39,8 +39,8 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
     try {
       // Load sleep data
       const sleepData = await getLatestTrackerData('sleep', 1);
-      if (sleepData) {
-        const sleepScore = Math.round((sleepData.value / 100) * 10); // Convert to 1-10 scale
+      if (sleepData && sleepData.value) {
+        const sleepScore = Math.round((sleepData.value / 100) * 10);
         setSleep(sleepScore);
         setDataSource(prev => ({ ...prev, sleep: 'tracker' }));
         setTrackerData(prev => ({ ...prev, sleep: sleepData }));
@@ -48,8 +48,7 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
 
       // Load HRV data for stress estimation
       const hrvData = await getLatestTrackerData('hrv', 1);
-      if (hrvData) {
-        // Higher HRV typically means lower stress (simplified calculation)
+      if (hrvData && hrvData.value) {
         const stressScore = Math.max(1, Math.min(10, 10 - Math.round(hrvData.value / 10)));
         setStress(stressScore);
         setDataSource(prev => ({ ...prev, stress: 'tracker' }));
@@ -67,7 +66,6 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
       }
 
     } catch (error) {
-      console.error('Error loading tracker data:', error);
     }
   };
 
@@ -91,9 +89,9 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
         sleepSource: dataSource.sleep,
         stressSource: dataSource.stress,
         bodyTemperatureSource: 'manual',
-        trackerSleepScore: trackerData.sleep?.value,
-        trackerHrv: trackerData.hrv?.value,
-        trackerRestingHr: trackerData.heartRate?.value,
+        trackerSleepScore: (trackerData.sleep as { value?: number })?.value,
+        trackerHrv: (trackerData.hrv as { value?: number })?.value,
+        trackerRestingHr: (trackerData.heartRate as { value?: number })?.value,
       });
 
       toast({
@@ -103,7 +101,6 @@ const DailyCheckIn: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
 
       onComplete();
     } catch (error) {
-      console.error('Error saving check-in:', error);
       toast({
         title: "Error",
         description: "Failed to save your check-in. Please try again.",
