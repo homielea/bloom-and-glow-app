@@ -44,7 +44,9 @@ const PWAPrompt: React.FC = () => {
       setHasSeenInstallPrompt(true);
       toast.success('App installed successfully! You can now use it offline.');
     } catch (error) {
-      console.error('Install failed:', error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Install failed:', error);
+      }
       toast.error('Installation failed. Please try again.');
     }
   };
@@ -67,7 +69,9 @@ const PWAPrompt: React.FC = () => {
         toast.error('Notifications disabled. You can enable them later in settings.');
       }
     } catch (error) {
-      console.error('Permission request failed:', error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Permission request failed:', error);
+      }
       toast.error('Failed to request notification permission.');
     }
   };

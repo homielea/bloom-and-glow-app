@@ -53,7 +53,6 @@ const ExpertQASystem: React.FC = () => {
       if (error) throw error;
       setExperts((data || []) as ExpertProfile[]);
     } catch (error) {
-      console.error('Error fetching experts:', error);
       toast.error('Failed to load experts');
     }
   };
@@ -72,7 +71,6 @@ const ExpertQASystem: React.FC = () => {
       if (error) throw error;
       setExpertQuestions((data || []) as ForumPost[]);
     } catch (error) {
-      console.error('Error fetching expert questions:', error);
       toast.error('Failed to load questions');
     } finally {
       setLoading(false);
@@ -94,7 +92,6 @@ const ExpertQASystem: React.FC = () => {
       if (error) throw error;
       setQuestionReplies((data || []) as ForumReply[]);
     } catch (error) {
-      console.error('Error fetching question replies:', error);
       toast.error('Failed to load replies');
     }
   };
@@ -119,7 +116,6 @@ const ExpertQASystem: React.FC = () => {
       setNewQuestionTitle('');
       fetchExpertQuestions();
     } catch (error) {
-      console.error('Error submitting question:', error);
       toast.error('Failed to submit question');
     }
   };

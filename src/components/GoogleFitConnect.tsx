@@ -36,7 +36,6 @@ const GoogleFitConnect: React.FC = () => {
       });
       
     } catch (error) {
-      console.error('Google Fit connection error:', error);
       toast({
         title: "Connection failed",
         description: "Failed to connect to Google Fit. Please try again.",
@@ -62,7 +61,6 @@ const GoogleFitConnect: React.FC = () => {
       });
       
     } catch (error) {
-      console.error('Google Fit sync error:', error);
       toast({
         title: "Sync failed",
         description: "Failed to sync data from Google Fit. Please try again.",

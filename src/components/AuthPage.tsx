@@ -109,7 +109,6 @@ const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
         });
       }
     } catch (error: any) {
-      console.error('Auth error:', error);
       toast({
         title: "Authentication failed",
         description: error.message || "Please check your credentials and try again.",

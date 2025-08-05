@@ -51,7 +51,6 @@ const HealthTrackers: React.FC<HealthTrackersProps> = ({ onNavigate }) => {
         setLatestData(data);
       }
     } catch (error) {
-      console.error('Error loading connections:', error);
       toast.error('Failed to load health tracker connections');
     } finally {
       setIsLoading(false);
@@ -67,7 +66,6 @@ const HealthTrackers: React.FC<HealthTrackersProps> = ({ onNavigate }) => {
       // Trigger initial sync
       await handleSync(connection.id);
     } catch (error) {
-      console.error(`Error connecting to ${provider}:`, error);
       toast.error(`Failed to connect to ${provider}`);
     }
   };
@@ -78,7 +76,6 @@ const HealthTrackers: React.FC<HealthTrackersProps> = ({ onNavigate }) => {
       await syncHealthData(connectionId);
       await loadConnections(); // Refresh data
     } catch (error) {
-      console.error('Error syncing data:', error);
       toast.error('Failed to sync health data');
     } finally {
       setIsSyncing(false);

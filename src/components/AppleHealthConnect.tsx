@@ -61,7 +61,6 @@ const AppleHealthConnect: React.FC = () => {
       await syncAppleHealthData();
       
     } catch (error) {
-      console.error('Apple Health connection error:', error);
       toast({
         title: "Connection failed",
         description: "Failed to connect to Apple Health. Please try again.",

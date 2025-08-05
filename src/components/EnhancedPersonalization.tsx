@@ -76,7 +76,7 @@ const EnhancedPersonalization: React.FC = () => {
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        console.error('Error loading personalization settings:', error);
+        toast.error('Failed to load personalization settings');
         return;
       }
 
@@ -86,7 +86,7 @@ const EnhancedPersonalization: React.FC = () => {
         setSettings({ ...settings, ...defaultSettings });
       }
     } catch (error) {
-      console.error('Error in loadPersonalizationSettings:', error);
+      toast.error('Failed to load personalization settings');
     }
   };
 
@@ -153,9 +153,8 @@ const EnhancedPersonalization: React.FC = () => {
 
       toast.success('Personalization settings saved successfully!');
     } catch (error) {
-      console.error('Error saving settings:', error);
       toast.error('Failed to save settings');
-    } finally {
+    }finally {
       setLoading(false);
     }
   };

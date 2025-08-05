@@ -97,7 +97,6 @@ const SmartRecommendationEngine: React.FC = () => {
 
       setRecommendations(enhancedRecommendations);
     } catch (error) {
-      console.error('Error generating recommendations:', error);
       toast.error('Failed to generate recommendations');
     } finally {
       setIsLoading(false);

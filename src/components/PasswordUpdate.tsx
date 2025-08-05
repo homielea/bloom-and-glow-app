@@ -81,7 +81,6 @@ const PasswordUpdate: React.FC = () => {
         }, 2000);
       }
     } catch (error) {
-      console.error('Password update error:', error);
       toast({
         title: "Error",
         description: "Failed to update password. Please try again.",

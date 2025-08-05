@@ -108,7 +108,6 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
       };
 
       recognitionInstance.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
         setIsListening(false);
         
         if (event.error === 'not-allowed') {
@@ -142,7 +141,6 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
       recognition.start();
       toast.success('Listening... Speak now');
     } catch (error) {
-      console.error('Failed to start recognition:', error);
       toast.error('Failed to start voice recognition');
     }
   };

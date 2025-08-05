@@ -128,7 +128,7 @@ const AIHealthAssistant: React.FC = () => {
 
       setHealthPredictions(predictions);
     } catch (error) {
-      console.error('Error generating predictions:', error);
+      // Error generating predictions - continue without predictions
     }
   };
 
@@ -167,7 +167,7 @@ const AIHealthAssistant: React.FC = () => {
 
       setSmartRecommendations(smartRecs);
     } catch (error) {
-      console.error('Error generating recommendations:', error);
+      // Error generating recommendations - continue without recommendations
     }
   };
 
@@ -200,7 +200,6 @@ const AIHealthAssistant: React.FC = () => {
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Error processing message:', error);
       toast.error('Sorry, I encountered an error processing your request.');
     } finally {
       setIsLoading(false);

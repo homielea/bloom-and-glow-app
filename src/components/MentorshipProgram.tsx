@@ -114,7 +114,6 @@ const MentorshipProgram: React.FC = () => {
       
       setMentors(mockMentors);
     } catch (error) {
-      console.error('Error fetching mentors:', error);
       toast.error('Failed to load mentors');
     } finally {
       setLoading(false);
@@ -127,7 +126,6 @@ const MentorshipProgram: React.FC = () => {
       const mockRequests: MentorshipRequest[] = [];
       setMyRequests(mockRequests);
     } catch (error) {
-      console.error('Error fetching requests:', error);
     }
   };
 
@@ -144,7 +142,6 @@ const MentorshipProgram: React.FC = () => {
       setRequestGoals('');
       setPreferredFrequency('');
     } catch (error) {
-      console.error('Error sending request:', error);
       toast.error('Failed to send mentorship request');
     }
   };
